@@ -1,0 +1,234 @@
+\documentclass[10pt,oneside]{article}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{bm}
+
+\usepackage{epsf}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{wrapfig} \usepackage{subfig}
+
+\usepackage{enumerate}
+\usepackage{listings}
+
+\usepackage{setspace}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+%\usepackage{soul} % cross out text
+
+\usepackage[latin2]{inputenc}
+% \usepackage{times} % ez kiszedi a t1enc raszteressgt, de valami ms betu"tpust
+% hasznl
+\usepackage{lmodern} % ez eltu"nteti a raszteressget s mg jk is a betu"k
+% \usepackage[magyar]{babel}
+\usepackage{t1enc}
+
+% \usepackage[T1]{fontenc}
+
+\usepackage[usenames]{color}
+\usepackage[colorlinks]{hyperref} 
+\hypersetup{linkcolor=blue}
+% \usepackage{showkeys}
+
+% \onehalfspacing
+\usepackage{indentfirst}
+% \frenchspacing
+
+\geometry{left=2.5cm,right=2.5cm,top=3.0cm,bottom=2.5cm}
+
+\pagestyle{fancy}
+\lhead{Bayesian Methods}
+\chead{ }
+\rhead{\thepage}
+
+\lfoot{ }
+\cfoot{ }
+\rfoot{P\'{e}ter K\'{o}m\'{a}r, \the\year}
+
+
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.0pt}
+
+
+
+% \numberwithin{equation}{section} \numberwithin{figure}{section}
+% \numberwithin{table}{section}
+
+\author{Peter Komar}
+\title{Bayesian Methods}
+\date{\today}
+
+
+
+
+
+\begin{document}
+\newcommand{\bel}{\begin{equation}}
+\newcommand{\eel}{\end{equation}}
+\newcommand{\be}{\begin{equation*}}
+\newcommand{\ee}{\end{equation*}}
+
+\newcommand{\bal}{\begin{eqnarray}}
+\newcommand{\eal}{\end{eqnarray}}
+\newcommand{\ba}{\begin{eqnarray*}}
+\newcommand{\ea}{\end{eqnarray*}}
+
+\newcommand{\ket}[1]{| #1 \rangle}
+\newcommand{\Ket}[1]{\left| #1 \right\rangle}
+\newcommand{\bra}[1]{\langle #1 |}
+\newcommand{\Bra}[1]{\left\langle #1 \right|}
+
+\newcommand{\no}{\noindent}
+
+\newcommand{\ev}[1]{\langle #1 \rangle}
+\newcommand{\Ev}[1]{\left\langle #1 \right\rangle}
+\newcommand{\Tr}{\text{Tr}\,}
+\newcommand{\T}{^\top}
+\newcommand{\+}{^\dagger}
+\newcommand{\s}{^\ast}
+\newcommand{\PP}{\mathcal{P}}
+\newcommand{\eqE}{= \!\!\!\!\!^{{}^{E}}\,}
+
+\renewcommand{\d}[1]{\!d #1 \;}
+
+\newcommand{\bE}{{\mathbf E}}
+\newcommand{\bB}{{\mathbf B}}
+\newcommand{\bF}{{\mathbf F}}
+\newcommand{\bJ}{{\mathbf J}}
+\newcommand{\bv}{{\mathbf v}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\br}{\mathbf r}
+\newcommand{\bk}{\mathbf k}
+\newcommand{\hatx}{\hat{\mathbf{x}}}
+\newcommand{\haty}{\hat{\mathbf{y}}}
+\newcommand{\hatz}{\hat{\mathbf{z}}}
+
+\renewcommand{\vec}[1]{{\bf #1}}
+\newcommand{\mat}[1]{{\bf #1}}
+
+\newcommand{\op}[1]{\mathbf{#1}}
+\newcommand{\twovector}[2]{
+	\left[
+		\begin{array}{c}
+		#1 \\
+		#2
+		\end{array}
+	\right]
+}
+\newcommand{\threevector}[3]{
+	\left[
+		\begin{array}{c}
+		#1 \\
+		#2 \\
+		#3
+		\end{array}
+	\right]
+}
+\newcommand{\fourvector}[4]{
+	\left[
+		\begin{array}{c}
+		#1 \\
+		#2 \\
+		#3 \\
+		#4
+		\end{array}
+	\right]
+}
+\newcommand{\fivevector}[5]{
+	\left[
+		\begin{array}{c}
+		#1 \\
+		#2 \\
+		#3 \\
+		#4 \\
+		#5
+		\end{array}
+	\right]
+}
+\newcommand{\nvector}[2]{
+	\left[
+		\begin{array}{c}
+		#1_1 \\
+		#1_2 \\
+		\vdots \\
+		#1_#2
+		\end{array}
+	\right]
+}
+\newcommand{\ncovector}[2]{
+	[#1_1\s, #1_2\s, \dots #1_#2\s]
+}
+\newcommand{\twobytwomatrix}[4]{
+	\left[
+		\begin{array}{cc}
+		#1 & #2\\
+		#3 & #4
+		\end{array}
+	\right]
+}
+\newcommand{\threebythreematrix}[9]{
+	\left[
+		\begin{array}{ccc}
+		#1 & #2 & #3\\
+		#4 & #5 & #6\\
+		#7 & #8 & #9
+		\end{array}
+	\right]
+}
+\newcommand{\threebythreedeterminant}[9]{
+	\left|
+		\begin{array}{ccc}
+		#1 & #2 & #3\\
+		#4 & #5 & #6\\
+		#7 & #8 & #9
+		\end{array}
+	\right|
+}
+\newcommand{\nbymmatrix}[3]{
+	\left[ 
+		\begin{array}{cccc}
+		#1_{11}  & #1_{12} & \dots  & #1_{1 #2}\\
+		#1_{21}  & #1_{22} &        &         \\
+		\vdots   &         & \ddots & \vdots  \\
+		#1_{#3 1}&         & \dots  & #1_{#3 #2}
+		\end{array}
+	\right]
+}
+\newcommand{\nbyndeterminant}[2]{
+	\left|
+		\begin{array}{cccc}
+		#1_{11}  & #1_{12} & \dots  & #1_{1 #2}\\
+		#1_{21}  & #1_{22} &        &         \\
+		\vdots   &         & \ddots & \vdots  \\
+		#1_{#2 1}&         & \dots  & #1_{#2 #2}
+		\end{array}
+	\right|
+}
+
+
+\newcommand{\argmax}[1]{\underset{#1}{\operatorname{arg}\operatorname{max}}\;}
+
+\thispagestyle{empty}
+\maketitle
+ 
+%\newpage
+\tableofcontents
+\newpage
+
+\lstset{
+numbers=left, 
+numberstyle=\small, 
+numbersep=8pt, 
+frame = single, 
+language=Python, 
+framexleftmargin=15pt
+}
+
+
+\input{01-Foundations}
+
+
+\end{document}
