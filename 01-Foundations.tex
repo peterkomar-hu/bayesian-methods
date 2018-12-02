@@ -38,7 +38,7 @@ Bayes theorem
 	\item Data: $D = \{x_1, x_2, \ldots x_n\}$, independent measurements.
 	\item Model: $M$ with $\theta$: parameter(s) to estimate
 	\item Prior: $P(\theta)$
-	\item Likelihood: $P(D\;|\;\theta) = P(d_1\;|\;\theta) \;P(d_2\;|\;\theta)\;\ldots \;P(d_n\;|\;\theta) = \prod_{i=1}^n P(d_i\;|\;\theta)$
+	\item Likelihood: $P(D\;|\;\theta) = P(x_1\;|\;\theta) \;P(x_2\;|\;\theta)\;\ldots \;P(x_n\;|\;\theta) = \prod_{i=1}^n P(x_i\;|\;\theta)$
 	\item Unnormalized posterior: $P^\ast(\theta\;|\;D) \;=\; P(D\;|\;\theta) \;P(\theta)$
 	\item Normalization: $Z = \sum_\theta P^\ast(\theta\;|\;D)$
 	\item Posterior: $P(\theta\;|\;D) = \frac{1}{Z} P^\ast(\theta\;|\;D)$
@@ -86,7 +86,7 @@ T_std = np.sqrt(np.sum((T_arr - T_ev)**2 * P_arr))
 \end{itemize}
 Example
 
-``Waiting for my baggage at the airport carousel, there are two possibilities: 1) It could miss the plane, and will never come, or 2) It was on the plane and it had a 1/20 chance of arriving within any of the 1-minute intervals between 0 and 20 minutes. Now, given what is the posterior probability of model 2 given that 14 minutes has passed and the bas has not arrived?''
+``Waiting for my baggage at the airport carousel, there are two possibilities: 1) It could miss the plane, and will never come, or 2) It was on the plane and it had a 1/20 chance of arriving within any of the 1-minute intervals between 0 and 20 minutes. Now, given what is the posterior probability of model 2 given that 14 minutes has passed and the bag has not arrived?''
 \begin{itemize}
 	\item $D = \{\text{Bag has not arrived after } t_\text{wait}=14 \text{ minutes}\}$
 	\item $M_1$: It never arrives, $P(D\;|\;M_1) = 1$
