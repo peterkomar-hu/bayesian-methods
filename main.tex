@@ -106,6 +106,9 @@
 \newcommand{\haty}{\hat{\mathbf{y}}}
 \newcommand{\hatz}{\hat{\mathbf{z}}}
 
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
 \renewcommand{\vec}[1]{{\bf #1}}
 \newcommand{\mat}[1]{{\bf #1}}
 
@@ -236,5 +239,7 @@ framexleftmargin=15pt
 \newpage
 \input{03-Priors-Regularization-AIC-BIC-LRT}
 
+\newpage
+\input{04-Graphical-models}
 
 \end{document}
