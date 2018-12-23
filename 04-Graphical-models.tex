@@ -91,10 +91,129 @@
 	\centering
 		\includegraphics[height=20mm]{./figs/04-education-salary.pdf} 
 	\end{figure}
+\end{itemize}
 
+\newpage
+\subsection{Hierarchical models}
 
+\no Beta-Binomial model
+\begin{itemize}
+	\item Data: $D = \{(k_i, n_i)\}_{i=1}^N$, where $k_i$(successes) $\in\{0, 1, \ldots n_i\}$, and $n_i$(attempts) $\in \mathds{N}$
+
+	\item Model: 
+		\begin{itemize}
+			\item level 1: the parameters, $p = \{p_i\}_{i=1}^N$, where $p_i \in [0,1]$, define $P(k_i\;|\;n_i, p_i) = \text{Binomial}(k_i\;|\;n_i, p_i)$
+			\item level 2: the parameters, $\alpha, \beta$ (both $>0$), define $P(p_i\;|\;\alpha, \beta) = \text{Beta}(p_i\;|\;\alpha, \beta)$.
+		\end{itemize}
+		This hierarchy can be represented as
+		\begin{figure}[h!]
+		\centering
+			\includegraphics[height=26mm]{./figs/04-BetaBinomial.pdf}
+		\end{figure}
+
+	\item Joint likelihood:
+	\be
+		P(D, p\;|\;\alpha,\beta) = \prod_{i=1}^N\Big[\text{Binom}(k_i\;|\;n_i, p_i) \;\text{Beta}(p_i\;|\;\alpha, \beta)\Big]
+	\ee
+
+	\item Marginal likelihood:
+	\ba
+		P(D\;|\;\alpha, \beta) &=& \prod_{i=1}^N\left[\int\!dp_i\,\text{Binom}(k_i\;|\;n_i, p_i) \;\text{Beta}(p_i\;|\;\alpha, \beta)\right] = \prod_{i=1}^N\Big[\text{Beta-Binom}(k_i\;|\;n_i, \alpha, \beta)\Big]
+		\\
+		\text{where}&&
+		\text{Beta-Binom}(k\;|\;n, \alpha, \beta) = \frac{\Gamma(n+1)\Gamma(\alpha + \beta)}{\Gamma(n + \alpha + \beta)} \frac{\Gamma(k+\alpha)}{\Gamma(k+1) \Gamma(\alpha)} \frac{\Gamma(n - k + \beta)}{\Gamma(n-k + 1) \Gamma(\beta)}
+	\ea
+\end{itemize}
+
+\no Gamma-Poisson model (aka. Negative Binomial model)
+\begin{itemize}
+	\item Data: $D = \{k_i\}_{i=1}^N$, where $k_i$(events) $\in \mathds{N}$.
+	\item Model: 
+	\begin{itemize}
+		\item level 1: the parameters $\lambda = \{\lambda_i\}_{i=1}^N$, where $\lambda_i$ > 0, define $P(k_i\;|\;\lambda) = \text{Poisson}(k_i\;|\;\lambda_i)$
+		\item level 2: the parameters $\alpha, \beta$ (both $>0$), define $P(\lambda_i\;|\; \alpha, \beta) = \text{Gamma}(\lambda_i\;|\;\alpha, \beta)$.
+	\end{itemize}
+	This hierarchy can be represented as 
+	\begin{figure}[h!]
+		\centering
+			\includegraphics[height=26mm]{./figs/04-GammaPoisson.pdf}
+		\end{figure}
+	\item Joint likelihood:
+	\be
+		P(D, \lambda\;|\;\alpha, \beta) = \prod_{i=1}^N\Big[\text{Poisson}(k_i\;|\;\lambda_i) \;\text{Gamma}(\lambda_i\;|\;\alpha, \beta)\Big]
+	\ee
+
+	\item Marginal likelihood:
+	\ba
+		P(D\;|\;\alpha, \beta) &=& \prod_{i=1}^N\left[\int\!d\lambda_i\,\text{Poisson}(k_i\;|\;\lambda_i) \;\text{Gamma}(\lambda_i\;|\;\alpha, \beta)\right] = \prod_{i=1}^N\Big[\text{Gamma-Poisson}(k_i\;|\;\alpha, \beta)\Big]
+		\\
+		\text{where} && \text{Gamma-Poisson}(k\;|\;\alpha, \beta) = \frac{\Gamma(k + \alpha)}{\Gamma(k+1)\Gamma(\alpha)} \left(\frac{1}{\beta + 1}\right)^k \left(\frac{\beta}{\beta + 1}\right)^\alpha = 
+		\\
+		&=&
+		\text{NegativeBinom}(k\;|\;r, p) = {k + r -1 \choose k} p^k (1-p)^r,\quad \text{with }r = \alpha, \; p = \frac{1}{\beta + 1}
+	\ea
+\end{itemize}
+
+\no Dirichlet-Multinomial model
+\begin{itemize}
+	\item Data: $D = \{k_i\in\mathds{N}^M\}_{i=1}^N = \{(k_{i,1}, k_{i,2}, \ldots k_{i,M})\}_{i=1}^N$, where $k_{i,j}$(number of outcome $j$) $\in \mathds{N}$
+	\item Model:
+	\begin{itemize}
+		\item level 1: the parameters $p = \{p_i \in \mathds{R}^{M}\}_{i=1}^N = \{(p_{i,1}, p_{i,2},\ldots p_{i,M})\}_{i=1}^N$, where $p_{i,j}$(probability of outcome $j$ in sample $i$) $>0$, and $\sum_{j=1}^M p_{i,j} = 1,\;\forall i$, define $P(k_i\;|\;p_i) = \text{Multinomial}(k_i\;|\;k_{i,\text{tot}},p_i)$, where $k_{i,\text{tot}} = \sum_{j=1}^M k_{i,j}$
+		\item level 2: the parameters $\alpha = (\alpha_1, \alpha_2, \ldots \alpha_M)$, where each $\alpha_j > 0$, define $P(p_i\;|\; \alpha)= \text{Dirichlet}(p_i\;|\;\alpha)$
+	\end{itemize}
+	This hierarchy can be represented as 
+	\begin{figure}[h!]
+		\centering
+			\includegraphics[height=26mm]{./figs/04-DirichletMultinomial.pdf}
+		\end{figure}
+	\item Joint likelihood:
+	\be
+		P(D\;p|\;\alpha) = \prod_{i=1}^N\Big[ \text{Multinomial}(k_i\;|\;k_{i,\text{tot}}, p_i)\;\text{Dirichlet}(p_i\;|\alpha) \Big]
+	\ee
+	\item Marginal likelihood:
+	\ba
+		P(D\;|\;\alpha) &=& \prod_{i=1}^N\left[\int\!dp_i\, \text{Multinomial}(k_i\;|\;k_{i,\text{tot}}, p_i)\;\text{Dirichlet}(p_i\;|\alpha) \right] = \prod_{i=1}^N\Big[\text{Dirichlet-Multinomial}(k_i\;|\;k_{i,\text{tot}}, \alpha)\Big]
+		\\
+		\text{where} && \text{Dirichlet-Multinomial}(k\;|\;k_\text{tot}, \{\alpha_j\}_{j=1}^M) = \frac{\Gamma(k_\text{tot}+1)\Gamma(\alpha_\text{tot})}{\Gamma(k_\text{tot} + \alpha_\text{tot})} \prod_{j=1}^M \frac{\Gamma(k_j + \alpha_j)}{\Gamma(k_j + 1)\Gamma(\alpha_j)},
+		\\
+		&&\text{where }\quad \alpha_\text{tot} = \sum_{j=1}^M \alpha_j
+	\ea
+\end{itemize}
+
+\newpage
+\no Bayesian ANOVA (aka. Random Effect Model)
+\begin{itemize}
+	\item Data: $D = \{x_g\}_{g=1}^G = \{(x_{g,1}, x_{g,2},\ldots x_{g, N_g})\}_{g=1}^G$, where $x_{g,i} \in \mathds{R}$ is measurement $i$ in group $g$, and groups can be of different sizes $N_g$.
+	\item Model:
+	\begin{itemize}
+		\item level 1: The parameters $\mu = \{\mu_g\}_{g=1}^G$ and $\sigma^2$ define $P(x_{g,i}\;|\;\mu_g, \sigma) = \text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)$
+		\item level 2: The parameter $\sigma_0^2$ define $P(\mu_g\;|\;\mu_0,\sigma_0) = \text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2)$
+	\end{itemize}
+	This hierarchy can be represented as  
+	\begin{figure}[h]
+		\centering
+			\includegraphics[height=26mm]{./figs/04-anova.pdf}
+		\end{figure}
+	\item Joint likelihood:
+	\be
+		P(D, \mu\;|\; \mu_0, \sigma_0, \sigma) = \prod_{g=1}^G\left[\text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2) \times \prod_{i=1}^{N_g}\text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)\right]
+	\ee
+	\item Marginal likelihood:
+	\ba
+		P(D\;|\;\mu_0, \sigma_0, \sigma) 
+		&=& 
+		\prod_{g=1}^G\intop_{-\infty}^{+\infty}\!d\mu_g\,\left[\text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2) \times \prod_{i=1}^{N_g}\text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)\right] 
+		\\
+		&=&
+		(2\pi \sigma_0^2)^{-\frac{G}{2}} \prod_{g=1}^G \left[\frac{1}{\sqrt{\xi + N_g}}(2\pi\sigma^2)^{-\frac{N_g-1}{2}}\exp\left(-\frac{N_g}{2\sigma^2}\left[\frac{\xi}{\xi + N_g}(\mu_g - m_g)^2 + s_g^2\right]\right)\right]
+		\\
+		\text{where}&& \xi = \frac{\sigma^2}{\sigma_0^2},\qquad m_g = \frac{1}{N_g}\sum_{i=1}^{N_g} x_{g,i}, \qquad s_g^2 = \frac{1}{N_g}\sum_{i=1}^{N_g} x_{g,i}^2 - m_g^2
+	\ea
 
 \end{itemize}
+
+
 
 
 
