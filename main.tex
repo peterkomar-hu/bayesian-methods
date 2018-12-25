@@ -2,6 +2,8 @@
 
 \usepackage{amsfonts}
 \usepackage{amsmath}
+\DeclareMathOperator*{\amax}{arg\,max}
+\DeclareMathOperator*{\amin}{arg\,min}
 \usepackage{amssymb}
 \usepackage{dsfont}
 \usepackage{bm}
@@ -64,7 +66,6 @@
 
 
 
-
 \begin{document}
 \newcommand{\bel}{\begin{equation}}
 \newcommand{\eel}{\end{equation}}
@@ -108,6 +109,7 @@
 
 \newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
 \def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
 
 \renewcommand{\vec}[1]{{\bf #1}}
 \newcommand{\mat}[1]{{\bf #1}}
@@ -241,5 +243,8 @@ framexleftmargin=15pt
 
 \newpage
 \input{04-Graphical-models}
+
+\newpage
+\input{05-Hidden-Variables-Clustering}
 
 \end{document}

@@ -86,17 +86,24 @@
 		\includegraphics[height=16mm]{./figs/04-education-vote.pdf} 
 	\end{figure}
 
-	\item Education and Experience both affect Salary, but Education also affect Experience. This can be represented as
+	\item Education and Experience both affect Salary, but Education also affects Experience. This can be represented as
 	\begin{figure}[h!]
 	\centering
 		\includegraphics[height=20mm]{./figs/04-education-salary.pdf} 
 	\end{figure}
 \end{itemize}
 
+\subsection{Plate notation}
+
+\begin{figure}[h!]
+\centering
+	\includegraphics[height=30mm]{./figs/04-plate-notation.pdf}
+\end{figure}
+
 \newpage
 \subsection{Hierarchical models}
 
-\no Beta-Binomial model
+\no {\bf Beta-Binomial model}
 \begin{itemize}
 	\item Data: $D = \{(k_i, n_i)\}_{i=1}^N$, where $k_i$(successes) $\in\{0, 1, \ldots n_i\}$, and $n_i$(attempts) $\in \mathds{N}$
 
@@ -125,7 +132,7 @@
 	\ea
 \end{itemize}
 
-\no Gamma-Poisson model (aka. Negative Binomial model)
+\no {\bf Gamma-Poisson model} (aka. Negative Binomial model)
 \begin{itemize}
 	\item Data: $D = \{k_i\}_{i=1}^N$, where $k_i$(events) $\in \mathds{N}$.
 	\item Model: 
@@ -154,7 +161,7 @@
 	\ea
 \end{itemize}
 
-\no Dirichlet-Multinomial model
+\no {\bf Dirichlet-Multinomial model}
 \begin{itemize}
 	\item Data: $D = \{k_i\in\mathds{N}^M\}_{i=1}^N = \{(k_{i,1}, k_{i,2}, \ldots k_{i,M})\}_{i=1}^N$, where $k_{i,j}$(number of outcome $j$) $\in \mathds{N}$
 	\item Model:
@@ -182,7 +189,7 @@
 \end{itemize}
 
 \newpage
-\no Bayesian ANOVA (aka. Random Effect Model)
+\no {\bf Random Effect Model}
 \begin{itemize}
 	\item Data: $D = \{x_g\}_{g=1}^G = \{(x_{g,1}, x_{g,2},\ldots x_{g, N_g})\}_{g=1}^G$, where $x_{g,i} \in \mathds{R}$ is measurement $i$ in group $g$, and groups can be of different sizes $N_g$.
 	\item Model:
@@ -194,7 +201,7 @@
 	\begin{figure}[h]
 		\centering
 			\includegraphics[height=26mm]{./figs/04-anova.pdf}
-		\end{figure}
+	\end{figure}
 	\item Joint likelihood:
 	\be
 		P(D, \mu\;|\; \mu_0, \sigma_0, \sigma) = \prod_{g=1}^G\left[\text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2) \times \prod_{i=1}^{N_g}\text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)\right]
@@ -212,6 +219,91 @@
 	\ea
 
 \end{itemize}
+
+\newpage
+\subsection{Example: Beta-Binomial}
+Life-time performance 10 different boxers are collected. Wins ($k_i$) and losses ($n_i - k_i$) are tallied, and the observed win rate $p_{i,\text{obs}} = k_i / n_i$ is calculated. This is shown below
+\begin{figure}[h]
+\centering
+	\includegraphics[width=0.7\textwidth]{./figs/04-betabinom-data.pdf}
+\end{figure}
+
+We would like to determine the win rate of an ``typical boxer'', i.e. the distribution of the win rate $p$. While the observed values $p_\text{obs}$ are good estimates of the individual win rates, 5 boxers played less than 30 matches, while 5 played more than 40, which means the second group provides more information, and their observed win rates need to be taken with more certainty. The Beta-Binomial hierarchical model accounts for this inhomogeneity.
+\begin{itemize}
+	\item Data: $\{n_i\} = [24, 23, 30, 21, 25, 53, 41, 52, 64, 57]$, $\{k_i\} = [ 10, 13,  9, 10,  9, 51, 28, 37, 59, 45]$, with $N = 10$.
+	\item Parameters: $\alpha, \beta > 0$
+	\item Model:
+	\ba
+		&& \log P(D\;|\;\alpha, \beta) = \sum_{i=1}^N \log \Big(\text{Beta-Binom}(k_i\;|\;n_i, \alpha, \beta)\Big)
+		\\
+		&\text{where}&
+		\log\Big(\text{Beta-Binom}(k\;|\;n, \alpha, \beta)\Big) = -f(n, \alpha+\beta) + f(k, \alpha) + f(n-k, \beta),
+		\\
+		&\text{where}&
+		f(k, \alpha) = \log\Gamma(k+\alpha) - \log\Gamma(k+1) - \log\Gamma(\alpha)
+	\ea
+	which can be implemented as 
+\begin{lstlisting}[language=python]
+from scipy.special import gammaln
+
+def log_three_gamma_term(k, a):
+    return gammaln(k+a) - gammaln(k+1) - gammaln(a)
+
+def log_beta_binom(k, n, a, b):
+    target = 0
+    target += - log_three_gamma_term(n, a+b)
+    target += log_three_gamma_term(k, a)
+    target += log_three_gamma_term(n-k, b)
+    return target
+
+def log_likelihood(k, n, a, b):
+    target = 0
+    for ki, ni in zip(k, n):
+        target += log_beta_binom(ki, ni, a, b)
+    return target
+\end{lstlisting}
+
+	\item While assuming flat priors for $\alpha$ and $\beta$, we can numerically calculate their joint posterior and means.
+\begin{lstlisting}[language=python]
+import numpy as np
+import pandas as pd
+
+a_arr, b_arr = np.meshgrid(np.linspace(0.1, 20, 100), 
+                           np.linspace(0.1, 20, 100))
+a_arr = a_arr.flatten()
+b_arr = b_arr.flatten()
+
+loglike = []
+for a, b in zip(a_arr, b_arr):
+    loglike.append(log_likelihood(k, n, a, b))
+    
+df = pd.DataFrame({
+    'a': a_arr,
+    'b': b_arr,
+    'loglike': loglike
+})
+
+df['pstar'] = np.exp(df['loglike'] - df['loglike'].max())
+Z = df['pstar'].sum()
+df['posterior'] = df['pstar'] / Z
+
+post_a = df.groupby(by='a')['posterior'].sum().reset_index()
+post_b = df.groupby(by='b')['posterior'].sum().reset_index()
+
+a_mean = (post_a['posterior'] * post_a['a']).sum()
+b_mean = (post_b['posterior'] * post_b['b']).sum()
+
+\end{lstlisting}
+\end{itemize}
+giving $\mathbb{E}(\alpha\;|\;D) = 4.142$, $\mathbb{E}(\beta\;|\;D) = 2.289$. 
+
+\no Their (marginal) posteriors and the distribution of the win rate (for the mean $\alpha$ and $\beta$ values) are below.
+\begin{figure}[h]
+\centering
+	\includegraphics[width=0.45\textwidth]{./figs/04-betabinom-ab.pdf}
+	\includegraphics[width=0.45\textwidth]{./figs/04-betabinom-fit.pdf}
+\end{figure}
+
 
 
 

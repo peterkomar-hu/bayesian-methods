@@ -24,7 +24,8 @@ Proper priors are normalized, i.e. $\sum_\theta P(\theta) = 1$.
 	\item Penalty: $\text{penalty}(\theta)$, which is high for implausible $\theta$ values.
 	\item Regularized optimum: $\theta_\text{reg.opt.} = \text{arg min}_\theta (-L(\theta) + \text{penalty}(\theta))$
 \end{itemize}
-Example: Linear regression
+
+\subsection{Linear regression}
 \begin{itemize}
 	\item Data: $D = \{\;(\{x_{i,k}\}_{k=1}^K, \;y_i)\;\}_{i=1}^N$, where $x_i$ (feature vector) $\in \mathds{R}^K$,  $y_i$ (predicted variable) $\in \mathds{R}$.
 	\item Parameters: $\{b_k\}_{k=1}^K$, where $b_k$ (coefficient or weight) $\in \mathds{R}$.
@@ -84,7 +85,7 @@ Model evidence
 \end{itemize}
 
 \newpage
-\no Example: Linear regression
+\subsection{Example: Linear regression}
 \begin{itemize}
 	\item Data: $D = \{(x_i, y_i)\}_{i=1}^N$ (generated from $y = 1 - 3x - x^2/2 + x^3 + \varepsilon$ with $\text{std}(\varepsilon) = 2$).
 \begin{lstlisting}[language=python]
