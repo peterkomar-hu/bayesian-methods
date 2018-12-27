@@ -1,0 +1,190 @@
+\section{Curse of Dimensionality, Laplace approximation}
+
+
+\subsection{High-dimensional example}
+\begin{itemize}
+	\item Data: $D = \{k_t\}_{t=1}^T$, where $k_t\in\mathds{N}$ is the number of influenza cases at small clinic on each day of the year ($T = 365$).
+	\item Parameters: 
+	\begin{itemize}
+		\item $\theta = \{\theta_t\}_{t=1}^T$, with $\theta_t = \log(\lambda_t)$ where $\lambda_t > 0$ is the intensity of influenza on a given day $t$.
+		\item $\sigma > 0$, the typical change $\theta_t - \theta_{t-1}$. 
+	\end{itemize}
+	\item Model:
+	\begin{itemize}
+		\item Prior: $P(\theta_t\;|\;\theta_{t-1}) = \text{Normal}(\theta_t\;|\;\theta_{t-1}, \,\sigma^2)$, and $P(\sigma) = \text{const.}$
+		\item Data generation process: $P(k_t\;|\;\theta_t) = \text{Poisson}(k_t\;|\; \lambda = \exp(\theta_t))$
+	\end{itemize}
+	\item Posterior: 
+	\be
+		P(\theta\;|\;D) = \frac{1}{Z} P\s(\theta\;|\;D) = \frac{1}{Z} \prod_{t=1}^T \Big[ P(\theta_{t}\;|\;\theta_{t-1}) \,P (k_t\;|\;\theta_t) \Big]
+	\ee
+	with the understanding that $``P(\theta_1\;|\;\theta_0)'' = 1$.
+	Here $Z$ is the normalization constant.
+	\begin{figure}[h]
+	\centering
+		\includegraphics[width=0.5\textwidth]{./figs/06-influenza.pdf}
+	\end{figure}
+	\item Numerical solution would require evaluating $P\s$ on a grid of different $\theta$ values. Even, at the very extreme, when we consider only 2 values for each $\theta_t$, the number of evaluations becomes
+	\be
+		2^{365} \approx 10^{109} > 10^{86} \text{ (the number of protons in the observable part of the universe),}
+	\ee
+	which makes it impossible to pursue this strategy.
+\end{itemize}
+
+\subsection{Laplace approximation}
+\begin{itemize}
+	\item Goal: Determine posterior mean and variance of each parameter $\theta_t$
+	\item Challenge: The dimension of $\theta = \{\theta_t\}_{t=1}^T$, i.e. $T$ is too high for direct numerical evaluation.
+	\item Method: Approximate $P\s(\theta\;|\;D)$ near its maximum with a multi-variate normal distribution.
+	\ba
+		P\s(\theta\;|\;D) 
+		&\approx& 
+		\text{Normal}(\theta\;|\;\mu, \Sigma) = \frac{1}{\sqrt{\det(2\pi \Sigma)}} \exp\left[-\frac{1}{2}(\theta - \mu)^\top \Sigma^{-1} (\theta - \mu)\right]
+		\\
+		\\
+		\text{where} 
+		&&
+		\mu = \amax_\theta \big[\log P\s\big] \qquad \in \mathds{R}^T
+		\\
+		&& \Sigma = \left[-\frac{d}{d\theta}\frac{d}{d\theta} \log P\s\right]^{-1}_{\theta = \mu} \hspace{1.9mm} \in \mathds{R}^{T\times T}
+	\ea
+	where $\mu$ can be found with direct numerical or analytical minimization or an expectation maximization algorithm, and $\Sigma$ can be evaluated analytically or approximated numerically.
+\end{itemize}
+
+\newpage
+\subsection{Example: $(x,y)$ linear regression}
+\begin{itemize}
+	\item Data: $D = \{D_x, D_y\}$, 
+	\begin{itemize}
+		\item where $D_x = \{x_i\}_{i=1}^N = [21, 24, 17, 39, 23, 45, 33, 26, 13, 35]$, 
+		\item and $\quad D_y = \{y_i\}_{i=1}^N = [22, 27, 22, 29, 26, 36, 30, 26, 15, 37]$
+	\end{itemize}
+	\begin{figure}[h]
+	\centering
+		\includegraphics[width=0.38\textwidth]{./figs/06-data.pdf}
+\end{figure}
+	\item Parameters: $a$ (slope), $b$ (intercept), $\sigma^2$ (strength of $y$-noise), using flat priors, i.e. $P(a, b, \sigma^2) = \text{const.}$
+	\item Model:
+		\be
+			P(D_y\;|\;D_x, a, b, \sigma^2) = \prod_{i=1}^N \text{Normal}(y_i\;|\;\mu(x_i), \sigma^2),\qquad \text{where } \mu(x_i) = ax_i + b
+		\ee
+	\item Unnormalized posterior:
+		\be
+			\log P\s(a, b, \sigma^2\;|\;D) = -\frac{N}{2}\log(2\pi \sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^N\Big[y_i - (ax_i + b)\Big]^2
+		\ee
+	\item MLE estimate:
+		\be
+			\left.
+				\begin{array}{l}
+				0 = \frac{\partial}{\partial a} \log P\s = \frac{1}{\sigma^2}\left[\sum_i y_i x_i - a \sum_i x_i^2 - b \sum_i x_i\right]
+				\\
+				0 = \frac{\partial}{\partial b} \log P\s = \frac{1}{\sigma^2}\left[\sum_i y_i - a\sum_i x_i - bN\right]
+				\\
+				0 = \frac{\partial}{\partial (\sigma^2)} \log P\s = -\frac{N}{2\sigma^2} + \frac{1}{2(\sigma^2)^2} \sum_i\Big[y_i - (ax_i + b)\Big]^2
+				\end{array}
+			\right\}
+			\Rightarrow
+			\left\{
+				\begin{array}{l}
+				a_\text{MLE} = \big(\overline{yx} - \overline{y}\,\overline{x}\big) / \big(\overline{x^2} - \overline{x}^2\big)
+				\\
+				b_\text{MLE} = \overline{y} - a_\text{MLE}\,\overline{x}
+				\\
+				(\sigma^2)_\text{MLE} = \frac{1}{N}\sum_i\big[y_i - (a_\text{MLE}\,x_i + b_\text{MLE})\big]^2
+				\end{array}
+			\right.
+		\ee
+		where
+		\be
+			\overline{x} = \frac{1}{N}\sum_i x_i = 27.6,\qquad 
+			\overline{y} = \frac{1}{N}\sum_i y_i = 27.0,\qquad
+			\overline{x^2} = \frac{1}{N}\sum_i x_i^2 = 854.0,\qquad
+			\overline{yx} = \frac{1}{N}\sum_i y_i x_i = 798.9,\qquad
+		\ee
+\begin{lstlisting}[language=python]
+import numpy as np
+
+def xy_linear_regression_MLE(x, y):
+    N = len(x)
+    ev_x = np.mean(x)
+    ev_y = np.mean(y)
+    ev_xx = np.mean(x * x)
+    ev_yx = np.mean(y * x)
+    ev_yy = np.mean(y * y)
+
+    a_MLE = (ev_yx - ev_y * ev_x) / (ev_xx - ev_x**2)
+    b_MLE = ev_y - a_MLE * ev_x
+    sigma2_MLE = 1.0/N * np.sum((y - (a_MLE * x + b))**2)
+    
+    return a_MLE, b_MLE, sigma2_MLE
+\end{lstlisting}
+		giving $\mu = (a_\text{MLE}, b_\text{MLE}, (\sigma^2)_\text{MLE})$, with $a_\text{MLE} = 0.5822$, \quad $b_\text{MLE} = 10.93$, \quad  $(\sigma^2)_\text{MLE} = 7.737$.
+
+	\item Laplace approximation:\\
+	First, we calculate all second order derivatives at the MLE point:
+	\ba
+		\frac{\partial}{\partial a}\frac{\partial}{\partial a} \log P\s &=& -\frac{N}{\sigma^2} \overline{x^2}
+		\\
+		\frac{\partial}{\partial b}\frac{\partial}{\partial a} \log P\s = \frac{\partial}{\partial a}\frac{\partial}{\partial b} \log P\s &=& -\frac{N}{\sigma^2}\overline{x}
+		\\
+		\frac{\partial}{\partial b}\frac{\partial}{\partial b} \log P\s &=& -\frac{N}{\sigma^2} \log P\s
+		\\
+		\frac{\partial}{\partial (\sigma^2)}\frac{\partial}{\partial a} \log P\s = \frac{\partial}{\partial a}\frac{\partial}{\partial (\sigma^2)} \log P\s &=& 0
+		\\
+		\frac{\partial}{\partial (\sigma^2)}\frac{\partial}{\partial b} \log P\s = \frac{\partial}{\partial b}\frac{\partial}{\partial (\sigma^2)} \log P\s &=& 0 
+		\\
+		\frac{\partial}{\partial (\sigma^2)} \frac{\partial}{\partial (\sigma^2)} \log P\s &=& -\frac{N}{2(\sigma^2)^2}
+	\ea
+	from which we construct the second derivative at the MLE point:
+	\be
+		\left.-\nabla\nabla \log P\s\right|_\text{MLE} = 
+		\frac{N}{(\sigma^2)_\text{MLE}}
+		\threebythreematrix
+		{\overline{x^2}}{\overline{x}}{0}
+		{\overline{x}}{1}{0}
+		{0}{0}{\frac{1}{2(\sigma^2)_\text{MLE}}}
+	\ee
+\begin{lstlisting}[language=python]
+minus_dd_logPstar = N / sigma2_MLE * \
+np.array([
+    [ev_xx, ev_x, 0],
+    [ev_x, 1, 0],
+    [0, 0, 1/(2*sigma2_MLE)]
+])
+Sigma = - np.linalg.inv(minus_dd_logPstar)
+\end{lstlisting}
+	giving 
+	\be
+		\Sigma = \Big[-\nabla\nabla \log P\s|_\text{MLE}\Big]^{-1} = \threebythreematrix
+		{0.0839}{-0.2315}{0.0}
+		{-0.2315}{7.1634}{0.0}
+		{0.0}{0.0}{11.197}
+	\ee
+	and
+	\ba
+		\text{Var}(a\;|\;D) &\approx& \Sigma_{1,1} = 0.0839,\\
+		\text{Var}(b\;|\;D) &\approx& \Sigma_{2,2} = 7.1634,\\
+		\text{Var}(\sigma^2\;|\;D) &\approx& \Sigma_{3,3} = 11.197
+	\ea
+\end{itemize}
+\begin{figure}[h]
+	\centering
+		\includegraphics[width=0.45\textwidth]{./figs/06-a.pdf}
+		\includegraphics[width=0.45\textwidth]{./figs/06-b.pdf}\\
+		\includegraphics[width=0.45\textwidth]{./figs/06-sigma2.pdf}
+\end{figure}
+\begin{figure}[h]
+	\centering
+		\includegraphics[width=\textwidth]{./figs/06-linear-regression.pdf}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
