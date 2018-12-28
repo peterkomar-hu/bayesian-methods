@@ -114,7 +114,7 @@ def xy_linear_regression_MLE(x, y):
 
     a_MLE = (ev_yx - ev_y * ev_x) / (ev_xx - ev_x**2)
     b_MLE = ev_y - a_MLE * ev_x
-    sigma2_MLE = 1.0/N * np.sum((y - (a_MLE * x + b))**2)
+    sigma2_MLE = 1.0/N * np.sum((y - (a_MLE * x + b_MLE))**2)
     
     return a_MLE, b_MLE, sigma2_MLE
 \end{lstlisting}
@@ -127,7 +127,7 @@ def xy_linear_regression_MLE(x, y):
 		\\
 		\frac{\partial}{\partial b}\frac{\partial}{\partial a} \log P\s = \frac{\partial}{\partial a}\frac{\partial}{\partial b} \log P\s &=& -\frac{N}{\sigma^2}\overline{x}
 		\\
-		\frac{\partial}{\partial b}\frac{\partial}{\partial b} \log P\s &=& -\frac{N}{\sigma^2} \log P\s
+		\frac{\partial}{\partial b}\frac{\partial}{\partial b} \log P\s &=& -\frac{N}{\sigma^2}
 		\\
 		\frac{\partial}{\partial (\sigma^2)}\frac{\partial}{\partial a} \log P\s = \frac{\partial}{\partial a}\frac{\partial}{\partial (\sigma^2)} \log P\s &=& 0
 		\\
