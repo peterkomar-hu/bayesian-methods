@@ -16,6 +16,11 @@
 		\item level 1: $P(x_t\;|\;z_t, B) = B_{z_t}(x_t)$
 		\item level 2: $P(Z\;|\;w, A) = P(z_1\;|\; w) \prod_{t=2}^T P(z_t\;|\;z_{t-1}, A) = w_{z_1} \prod_{t=2}^T A_{z_{t-1}, z_{t}}$
 	\end{itemize}
+	\begin{figure}[h]
+	\centering
+		\includegraphics[width=0.5\textwidth]{./figs/09-HMM.pdf}
+	\end{figure}
+
 	\item Joint
 	\be
 		P(D, Z\;|\;w, A, B) = P(D\;|\;Z, B) P(Z\;|\;w, A) = \left[\prod_{t=1}^T B_{z_t}(x_t)\right] \times \left[w_{z_1} \prod_{t=2}^T A_{z_{t-1}, z_{t}}\right]
@@ -99,36 +104,90 @@ Algorithm:
 	For $s \in S$:
 	\ba
 		L_1(s) &:=& f_1(s)
+		\hspace{9cm}
 	\ea
 	For $t \in [2, 3, \ldots T]$: \\
 	\-\hspace{0.5cm} For $s \in S$:
 	\ba
 		L_t(s) &:=& \sum_{r\in S} L_{t-1}(r) \;f_t(r,s)
+		\hspace{7cm}
 	\ea
 	\item {\bf ``Backward''} \\
 	For $r \in S$:
 	\ba
 		R_T(r) &:=& 1
+		\hspace{9.7cm}
 	\ea
 	For $t \in [T-1, T-2, \ldots, 2, 1]$:\\
 	\-\hspace{0.5cm} For $s \in S$:
 	\ba
 		R_t(r) &:=& \sum_{s\in S} f_{t+1}(r,s) \;R_{t+1}(s)
+		\hspace{6.5cm}
 	\ea
 	\item {\bf ``Combine''} \\
 	\ba
 		N &=& \sum_{s\in S} L_T(s)
+		\hspace{8cm}
 	\ea
 	For $t \in [1, 2, \ldots T]$:\\
 	\-\hspace{0.5cm} For $s \in S$:
 	\ba
 		M_t(s) &=& L_t(s) \;R_t(s)
+		\hspace{8.3cm}
 	\ea
 	For $t \in [2, \ldots T]$:\\
 	\-\hspace{0.5cm} For $(s, r) \in S \times S$:
 	\ba
 		Q_t(r, s) &=& L_{t-1}(r) \;f_t(r, s) \;R_{t}(s)
+		\hspace{7cm}
 	\ea
+\end{enumerate}
+
+\newpage
+\subsection{Baum-Welch algorithm}
+\no Inputs:
+\begin{itemize}
+	\item Data: $\{x_t\}_{t=1}^T$
+	\item Set of possible hidden states: $S$
+	\item Parametrization of the emission probabilities: $\{B_s(x)\}_{s\in S}$. We consider two cases:
+	\begin{enumerate}
+		\item $B_s(x) = B_{s,x}$ matrix for finite number of possible $x\in \{1,2,\ldots K\}$ values.
+		\item $B_s(x) = P(x\;|\;s, \beta_s)$, where $\beta_s$ is the set of parameters for emission distribution of state $s$.
+	\end{enumerate}
+	\item Initial values: $w^{(0)}, A^{(0)}$, and $B = \{\{B_{s,x}^{(0)}\}_{x=1}^K\}_{s\in S}$ (for case 1) or $B = \{\beta_s^{(0)}\}_{s\in S}$ (for case 2).
+\end{itemize}
+Outputs:
+\begin{itemize}
+	\item $(w\s, A\s, B\s)$ that (locally) maximize $\sum_Z P(D, Z\;|\;w, A, B)$
+\end{itemize}
+Algorithm
+\begin{enumerate}
+	\item Initialize, $(w, A, B) := (w^{(0)}, A^{(0)}, B^{(0)})$
+
+	\item E-step: Run ``Belief propagation'' with inputs 
+	\begin{itemize}
+		\item $f_1(s) := w_s B_s(x_1)$
+		\item $f_t(r,s) := A_{r,s} B_s(x_t)$
+	\end{itemize}	
+	which returns
+	\begin{itemize}
+		\item $N = P(D\;|\;w, A, B)$
+		\item $M_t(s) = P(D, z_t=s\;|\;w, A, B)$
+		\item $Q_t(r,s) = P(D, z_{t-1}=r, z_t = s\;|\;w, A, B)$
+	\end{itemize}
+
+	\item M-step: Update parameters
+	\ba
+		w^\text{new}_s &=&  \frac{M_1(s)}{N} 
+		\\
+		A^\text{new}_{r,s} &=& \frac{\sum_{t=2}^T Q_t(r,s)}{\sum_{t=2}^T M_{t-1}(r)}
+		\\
+		\text{case 1}: \; B^\text{new}_{s,x} &=& \frac{\sum_{t=1}^T \delta_{x, x_t} M_t(s)}{\sum_{t=1}^T M_t(s)}
+		\\
+		\text{case 2:} \quad \beta_s^\text{new} &=& \amax_{\beta_s} \sum_{t=1}^T M_t(s) \log P(x_t\;|\;s, \beta_s) = \text{MLE of $\beta_s$ with data weights } \{M_t(s)\}_{t=1}^T
+	\ea
+
+	\item Check for convergence, and return to step 2 if needed.
 \end{enumerate}
 
 
