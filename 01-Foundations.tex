@@ -1,70 +1,80 @@
 \section{Foundations}
 
 \subsection{Definitions, identities}
-\no Notation
+\no {\bf Notation}
 \begin{itemize}
-	\item Upper-case letters ($A, B, C, X, Y$): random variables
-	\item Lower-case letters ($a, b, c, x, y$): real numbers
-	\item $P(X = x) \;=:\; P(x)$
-	\item $P(X = x \text{ and } Y = y) \;=:\; P(x, y)$
-	\item $P(A = a, \text{ given } B = b) \;=:\; P(a\;|\;b)$
-	\item $\int_{\infty}^{+\infty}[\ldots] da \;=:\; \sum_{a\in \mathds{R}} [\ldots] \;=:\; \sum_a[\ldots] $
+	\item Lower-case letters ($a, b, c, x, y$) stand for real numbers.
+	\item Upper-case letters ($A, B, C, X, Y$) stand for random variables, and $A = a$ is an event.
+	\item We write the probability of $X$ taking the value $x$ as $P(X = x) \;=:\; P(x)$.
+	\item Or, if $X$ is a continuous variable, $P(x \leq X \leq x + \delta) =: P(x)\;\delta$ (for small, positive $\delta$).
+	\item The comma between events stands for ``and'', i.e. $P(X = x \text{ and } Y = y) \;=:\; P(x, y)$
+	\item The vertical bar separates the events from conditions, i.e. $P(A = a, \text{ given } B = b) \;=:\; P(a\;|\;b)$
+	\item Both integration and summation are denoted as $\int_{\infty}^{+\infty}[\ldots] da \;=:\; \sum_{a\in \mathds{R}} [\ldots] \;=:\; \sum_a[\ldots] $
 \end{itemize}
-Conditional probability
+{\bf Conditional probability identities} (for every $a, b, c$)
 \begin{itemize}
-	\item $P(a\;|\;b) \;=\; \frac{P(a,b)}{P(b)}$
-	\item $P(a, b) \;=\; P(a\;|\; b) \;P(b)$
-	\item $P(a, b\;|\;c) \;=\;  P(a\;|\;b,c) \; P(b\;|\;c)$
-	\item $\sum_a P(a\;|\;b) \;=\; 1$,\quad but \;$\sum_b P(a\;|\;b) \neq 1$, in general
-	\item $\sum_b P(a\;|\;b) \; P(b) \;=\; \sum_b P(a,b) \;=\; P(a)$
+	\item $P(a,b)$ refers to the joint of $a$ and $b$, which may be dependent, i.e. $P(a,b) \neq P(a)P(b)$, in general.
+	\item Definition of conditional (``$a$, given $b$''): $P(a\;|\;b) \;=\; \frac{P(a,b)}{P(b)}$
+	\item After rearranging, we can write the joint (``$a$ and $b$'') as $P(a, b) \;=\; P(a\;|\; b) \;P(b)$.
+	\item The same holds under a common condition $c$, i.e. (``$a$ and $b$, given $c$'') $P(a, b\;|\;c) \;=\;  P(a\;|\;b,c) \; P(b\;|\;c)$
+	\item Normalization is required on the left argument (the ``event''), i.e. $\sum_a P(a\;|\;b) \;=\; 1$.
+	\item But summing the right argument (the ``condition'') does not yield 1, i.e.  \;$\sum_b P(a\;|\;b) \neq 1$, in general.
 \end{itemize}
-Marginal
+{\bf Marginal}
 \begin{itemize}
-	\item $P(a) \;=\; \sum_b P(a\;|\;b) \; P(b)$
+	\item Summing over all but one variable of a joint yields the marginal, $P(a) \;=\; \sum_b P(a,b) = \sum_b P(a\;|\;b) \; P(b)$.
 \end{itemize}
-Bayes theorem
+{\bf Bayes theorem}
 \begin{itemize}
-	\item $P(b\;|\;x) \;=\; \frac{1}{P(x)} P(x\;|\;b) \; P(b)$
-\vspace{0.5cm}
+	\item By expressing the joint $P(x,b) = P(b,x)$ in two different ways, one can show: $P(b\;|\;x) \;=\; \frac{1}{P(x)} P(x\;|\;b) \; P(b)$.
 \end{itemize}
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\textwidth]{./figs/Joint-Conditional-Marginal.pdf}
+	\includegraphics[width=0.9\textwidth]{./figs/Joint-Conditional-Marginal.pdf}
 \end{figure}
 
 \subsection{Bayesian inference}
-\no Prior, likelihood, posterior
+\label{sec:bayesian_inference}
+\no {\bf Prior, likelihood, posterior}
 \begin{itemize}
-	\item Data: $D = \{x_1, x_2, \ldots x_n\}$, independent measurements.
-	\item Model: $M$ with $\theta$: parameter(s) to estimate
-	\item Prior: $P(\theta)$
-	\item Likelihood: $P(D\;|\;\theta) = P(x_1\;|\;\theta) \;P(x_2\;|\;\theta)\;\ldots \;P(x_n\;|\;\theta) = \prod_{i=1}^n P(x_i\;|\;\theta)$
-	\item Unnormalized posterior: $P^\ast(\theta\;|\;D) \;=\; P(D\;|\;\theta) \;P(\theta)$
-	\item Normalization: $Z = \sum_\theta P^\ast(\theta\;|\;D)$
-	\item Posterior: $P(\theta\;|\;D) = \frac{1}{Z} P^\ast(\theta\;|\;D)$
+	\item We collect data: $D = \{x_1, x_2, \ldots x_n\}$, where each $x_i$ is a sample from the same process.
+	\item We describe a model by specifying three components:
+	\begin{enumerate}
+		\item its parameter $\theta$ (dimension, range, etc.), and
+		\item the prior distribution of $\theta$, $P(\theta)$, and
+		\item the generative (or ``forward'') probability $P(x_i\;|\; \theta)$
+	\end{enumerate}
+	\item We assume that the samples were generated independently, which allows us to write the likelihood, $P(D\;|\;\theta)$, as the product $P(D\;|\;\theta) = P(x_1\;|\;\theta) \;P(x_2\;|\;\theta)\;\ldots \;P(x_n\;|\;\theta) = \prod_{i=1}^n P(x_i\;|\;\theta)$
+	\item Calculating the unnormalized posterior, $P^\ast(\theta\;|\;D)$, is easy: $P^\ast(\theta\;|\;D) \;:=\; P(D\;|\;\theta) \;P(\theta)$
+	\item We need to normalize it though. The normalization constant is $Z = \sum_\theta P^\ast(\theta\;|\;D)$.
+	\item Once calculated, $Z$ can be used to obtain the posterior, $P(\theta\;|\;D) = \frac{1}{Z} P^\ast(\theta\;|\;D)$
 \end{itemize}
-Example
 
-``Three light bulbs of the same make lasted 1, 2 and 5 months of continuous use. Let us estimate the lifetime of this kind of light bulb.''
+\no {\bf Example}
+
+\emph{Three light bulbs of the same kind lasted for 1, 2 and 5 months under continuous use. Let us estimate the lifetime of this kind of light bulb.}
 \begin{itemize}
-	\item $D = \{t_1, t_2, t_3\} = \{1,2,5\}$
-	\item $M$: Light bulbs have average lifetime of $T$ months.
-	\item $P(T) = \frac{1}{1000}$, uniform on [0,1000].
-	\item $P(t\;|\;T) = \frac{1}{T}\exp\left(-\frac{t}{T}\right)$
-	\item $P(D\;|\;T) = \prod_i P(t_i\;|\; T) = \prod_{i=1}^3 \frac{1}{T}\exp\left(-\frac{t_i}{T}\right) = \frac{1}{T^3} \exp\left(-\frac{1 + 2 + 5}{T}\right)$
-	\item $P^\ast(T\;|\;D) = \frac{1}{T^3} \exp\left(-\frac{8}{T}\right)$
-	\item $Z$ and  $P(T\;|\;D)$ can be determined numerically:
+	\item The data consists of the three times: $D = \{t_1, t_2, t_3\} = \{1,2,5\}$
+	\item We model this process with 
+	\begin{enumerate}
+		\item a single ``typical lifetime'' variable $T > 0$,
+		\item realistically $T < 1000$ months, but otherwise we don't know, so we use a flat prior: $P(T) = \frac{1}{1000}$, uniform on [0,1000].
+		\item we assume no aging, which means the actual length of their life is exponential distributed with a mean of $T$: $P(t\;|\;T) = \frac{1}{T}\exp\left(-\frac{t}{T}\right)$
+	\end{enumerate}
+	\item We write the likelihood as $P(D\;|\;T) = \prod_i P(t_i\;|\; T) = \prod_{i=1}^3 \frac{1}{T}\exp\left(-\frac{t_i}{T}\right) = \frac{1}{T^3} \exp\left(-\frac{1 + 2 + 5}{T}\right)$,
+	\item and the unnormalized posterior as $P^\ast(T\;|\;D) = \frac{1}{T^3} \exp\left(-\frac{8}{T}\right) \frac{1}{1000}$.
+	\item We carry out the normalization (finding $Z$ and  $P(T\;|\;D)$) numerically:
 \begin{lstlisting}[language=python]
 import numpy as np
 
-T_arr = np.linspace(0.1, 1000, 10_000)
-Pstar_arr = 1.0/T_arr**3 * np.exp(-8/T_arr)
+T_arr = np.linspace(1e-6, 1000, 10_000)
+Pstar_arr = 1.0/T_arr**3 * np.exp(-8/T_arr) / 1000.0
 Z = np.sum(Pstar_arr)
 P_arr = Pstar_arr / Z
 \end{lstlisting}
-	yielding $Z = 0.1562$
-	\item $\mathbb{E}(T\;|\;D) = \sum_T T \;P(T\;|\;D)$ 
-	\item $\text{std}(T\;|\;D) = \sqrt{\sum_T (T - \mathbb{E}(T))^2 \; P(T\;|\;D)}$
+	yielding $Z = 1.562\times 10^{-4}$
+	\item We calculate the expected lifetime (given the observed data), $\mathbb{E}(T\;|\;D) = \sum_T T \;P(T\;|\;D)$, and
+	\item the standard deviation, $\text{std}(T\;|\;D) = \sqrt{\sum_T (T - \mathbb{E}(T))^2 \; P(T\;|\;D)}$, using the regular formulas.
 \begin{lstlisting}[language=python]
 T_ev = np.sum(T_arr * P_arr)
 T_std = np.sqrt(np.sum((T_arr - T_ev)**2 * P_arr))
@@ -74,31 +84,48 @@ T_std = np.sqrt(np.sum((T_arr - T_ev)**2 * P_arr))
 
 
 \subsection{Model comparison}
-\no New definition: Evidence
+\no {\bf New definition: Evidence}
 \begin{itemize}
-	\item Data: $D$
-	\item Model 1: $M_1$ with parameter $\theta_1$ and prior $P(\theta_1\;|\; M_1)$, and likelihood $P(D\;|\;\theta_1, M_1)$
-	\item Model 2: $M_2$ with parameter $\theta_2$ and prior $P(\theta_2\;|\; M_2)$, and likelihood $P(D\;|\;\theta_2, M_2)$
-	\item Prior on models: $P(M_1) = 0.5$, \; $P(M_2) = 0.5$.
-	\item Evidence for each model: $P(D\;|\;M_i) = \sum_\theta P(D\;|\;\theta_i, M_i) P(\theta_i\;|\;M_i)$
-	\item Unnormalized posterior: $P^\ast(M_1\;|\;D) = P(D\;|\;M_1) \; P(M_1)$,\quad and $P^\ast(M_2\;|\;D) = P(D\;|\;M_2) \; P(M_2)$
-	\item Normalization: $Z = P^\ast(M_1\;|\;D) + P^\ast(M_2\;|\;D)$.
+	\item We observe some data $D$,
+	\item specify one model, $M_A$ with its parameter $\alpha$, prior $P(\alpha\;|\; M_A)$, and likelihood $P(D\;|\;\alpha, M_A)$,
+	\item specify another model, $M_B$ with its parameter $\beta$, prior $P(\beta\;|\; M_B)$, and likelihood $P(D\;|\;\beta, M_B)$,
+	\item and declare prior probabilities for the models themselves: $P(M_A), P(M_B)$, so that $P(M_A) + P(M_B) = 1$.
+	\item We calculate the model evidence (or ``model likelihood'') by marginalizing over the parameters 
+	\begin{enumerate}
+		\item $P(D\;|\;M_A) = \sum_\alpha P(D\;|\;\alpha, M_A) \;P(\alpha\;|\;M_A)$,
+		\item $P(D\;|\;M_B) = \sum_\beta P(D\;|\;\beta, M_B) \;P(\beta\;|\;M_B)$,
+	\end{enumerate}
+	\item and we calculate the unnormalized posteriors: $P^\ast(M\;|\;D) = P(D\;|\;M) \; P(M)$, for both models.
+	\item Finally we obtain the normalization constant: $Z = P^\ast(M_A\;|\;D) + P^\ast(M_B\;|\;D)$,
+	\item allowing us to write the posterior probabilities of the models $P(M|D) = P^\ast(M|D) \;/ Z$, for both models.
 \end{itemize}
-Example
+{\bf Example}
 
-``Waiting for my baggage at the airport carousel, there are two possibilities: 1) It could miss the plane, and will never come, or 2) It was on the plane and it had a 1/20 chance of arriving within any of the 1-minute intervals between 0 and 20 minutes. Now, given what is the posterior probability of model 2 given that 14 minutes has passed and the bag has not arrived?''
+\emph{While waiting for the checked bag at the airport carousel, one can consider two possibilities: 1) The bag could have missed the flight, and will never come, or 2) it was on the plane and it has a flat chance of arriving within 0 to, let's say, 20 minutes. What is the posterior probability of model 2, if 14 minutes have already passed and the bag has not arrived?}
 \begin{itemize}
-	\item $D = \{\text{Bag has not arrived after } t_\text{wait}=14 \text{ minutes}\}$
-	\item $M_1$: It never arrives, $P(D\;|\;M_1) = 1$
-	\item $M_2$: It shows up some time between 0 and 20 minutes, $P(t_\text{bag}\;|\;M_2) = 1/20$ for $t_\text{bag} \in [0, 20]$, and the likelihood is $P(D\;|\;t_\text{bag}, M_2) = 1$, if $t_\text{bag} > t_\text{wait}$, and 0 otherwise.
-	\item $P(M_1) = 0.1$, \quad $P(M_2)= 0.9$
-	\item $P(D\;|\;M_1)$ = 1
-	\item $P(D\;|\;M_2) = \sum_{t_\text{bag}} P(D\;|\;t_\text{bag}, M_2) \;P(t_\text{bag}\;|\;M_2) = \sum_{t_\text{bag}} [t_\text{bag} > 14] \times\frac{1}{20} = \frac{20 - 14}{20}$
-	\item $P^\ast(M_1\;|\;D) = 1 \times 0.1$, \quad $P^\ast(M_2\;|\;D) = \frac{20 - 14}{20}\times 0.9$
-	\item $Z = 0.1 + \frac{3}{10}\times 0.9 = 0.37$
-	\item $P(M_2\;|\;D) = P^\ast(M_2\;|\;D) / Z = 0.7297$.
+	\item The only observation we have is $D = \{\text{Bag has not arrived after } t_\text{wait}=14 \text{ minutes}\}$
+	\item The first model, $M_1$, says the bag missed the plane. This means, no matter how much we waited it was pre-destined to not come out on the carousel, i.e. $P(D\;|\;M_1) = 1$. This model has no parameters.
+	\item The second model, $M_2$, assumes an equal chance for the bag to arrive any minute within the 20-minute window, which can be written as $P(t_\text{bag}\;|\;M_2) = 1/20$ for $t_\text{bag} \in [0, 20]$. Since every waiting time until the bag actually arrives is pre-destined to occur, we can write the likelihood as
+	\be
+		P(D\;|\;t_\text{bag}, M_2) = [t_\text{wait} < t_\text{bag}]
+		\left\{
+			\begin{array}{ll}
+				1 &, \quad \text{if }  t_\text{wait} < t_\text{bag} \\
+				0 &, \quad \text{otherwise}.
+			\end{array}
+		\right.
+	\ee
+	\item Let's say we assume an initial 10\% chance for the bag to have missed the flight, i.e. $P(M_1) = 0.1$, and therefore $P(M_2)= 1 - P(M_1) = 0.9$.
+	\item Since model 1 has no parameters, its likelihood (or evidence) is easy to look up from the model specification: $P(D\;|\;M_1) = 1$.
+	\item Model 2 has one parameter, $t_\text{wait}$, over which we need to sum to obtain its evidence: 
+	\be
+		P(D\;|\;M_2) = \sum_{t_\text{bag}} P(D\;|\;t_\text{bag}, M_2) \;P(t_\text{bag}\;|\;M_2) = \sum_{t_\text{bag}} [14 < t_\text{bag}] \times\frac{1}{20} = \sum_{t_\text{bag} > 14} \frac{1}{20} = \frac{20 - 14}{20}
+	\ee
+	\item Unnormalized posteriors we get by multiplying: $P^\ast(M_1\;|\;D) = 1 \times 0.1$, \quad $P^\ast(M_2\;|\;D) = \frac{20 - 14}{20}\times 0.9$,
+	\item the sum of which is the normalization constant, $Z = 0.1 + \frac{3}{10}\times 0.9 = 0.37$.
+	\item Now we calculate the posterior probability of model 2 as $P(M_2\;|\;D) = P^\ast(M_2\;|\;D) / Z = 0.7297$.
 \end{itemize}
-We can also plot $P(M_2\;|\;t_\text{wait})$ for all waiting times between 0 and 20 minutes.
+Additionally, we can calculate $P(M_2\;|\;t_\text{wait})$ for all waiting times between 0 and 20 minutes. This is shown below.
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\textwidth]{figs/Baggage_wait.pdf}
@@ -106,37 +133,56 @@ We can also plot $P(M_2\;|\;t_\text{wait})$ for all waiting times between 0 and 
 
 
 \subsection{Prediction}
-\no New definition: Predictive distribution
+\no {\bf New definition: Predictive distribution}
 \begin{itemize}
-	\item Data: $D = \{x_1, x_2, \ldots x_n\}$
-	\item Model: $M$ with parameter $\theta$, prior $P(\theta)$ and likelihood $P(x\;|\;\theta)$
-	\item Posterior: $P(\theta\;|\;D) = P^\ast(\theta\;|\;D) / Z = \ldots$ (see previous sections)
-	\item Predictive distribution: $P(X_{n+1} = x\;|\;D) = \sum_\theta P(x\;|\theta)\; P(\theta\;|\;D)$
-	\item Customized prediction: $P(f(\theta)\;|\;D) = \sum_\theta f(\theta)\; P(\theta\;|\;D)$
+	\item We measure some data, $D = \{x_1, x_2, \ldots x_n\}$, where each sample is assumed to be independently generated from the same process.
+	\item We model the process with a parameter $\theta$, its prior $P(\theta)$ and a generative distribution $P(x\;|\;\theta)$.
+	\item We calculate the posterior of the parameter $P(\theta\;|\;D) = P^\ast(\theta\;|\;D) / Z = \ldots$, following the steps in section \ref{sec:bayesian_inference}.
+	\item The predictive distribution, $P(X_{n+1} = x\;|\;D)$, describes what we can expect of an unobserved $n+1$th data point $X_{n+1}$, given the observations $x_1$ to $x_n$. It is the average of the generating distribution over all conceivable values of the parameter weighted by its posterior, i.e. 
+	\be
+		P(X_{n+1} = x\;|\;D) = \sum_\theta P(x\;|\theta)\; P(\theta\;|\;D)
+	\ee
+	\item Sometime, what we are interested is not the distribution of a new sample, but some interesting function the model parameter, $f(\theta)$. The distribution of such a custom metric can be calculated with a similar sum:  
+	\be
+		P(f(\theta)\;|\;D) = \sum_\theta f(\theta)\; P(\theta\;|\;D)
+	\ee
 \end{itemize}
-Example
+\begin{footnotesize}
+{\bf Note}: The fact that $P(x_{n+1}\;|\;D) \neq P(x_{n+1})$ may feel surprising. Did we not assume that the data points were generated independently? Indeed we did. What is usually meant by ``independence'' is $P(x_i, x_j\;|\;\theta) = P(x_i\;|\;\theta) P(x_j\;|\theta)$, which is exactly what we spelled out in section \ref{sec:bayesian_inference}. Although this \emph{conditional} independence holds for every fixed value of $\theta$, the $\{x_i\}$ variables become dependent after we marginalize out $\theta$. This is the mathematical equivalent of the fact that if the parameter is unknown, than every observation provides a piece of information about it, and that information, in turn, affects what we can expect of other observations. All this is due to the following asymmetry:
+\ba
+	P(a,b) = P(a)P(b) &\quad \Rightarrow \quad& \forall c:\;P(a,b\;|\;c) = P(a\;|\;c) P(b\;|\;c) \\
+	P(a,b) = P(a)P(b) &\quad \not\!\Leftarrow \quad& \forall c:\;P(a,b\;|\;c) = P(a\;|\;c) P(b\;|\;c)
+\ea
+\end{footnotesize}
 
-``Two player, A and B are playing a game of luck, where at the beginning of the game a ball is rolled on a pool table to divide the table in two un-equal halves: A's side and B's side. In each subsequent round, a ball is rolled. A point is given to the player on whose side the ball stops. A and B are playing this game until one of them reaches 6 points. The current score is 5 to 3 in favor of A. What is the chance that A will win this game?''
+\newpage
+\no {\bf Example}
+
+\emph{Two players, A and B are playing a game of luck, where at the beginning of the game a ball is rolled on a pool table to divide the table in two un-equal halves: A's side and B's side. In each subsequent round, a ball is rolled. A point is given to the player on whose side the ball stops. A and B are playing this game until one of them reaches 6 points. The current score is 5 to 3 in favor of A. What is the chance that A will win this game?}
 \begin{itemize}
-	\item $D = \{n_A = 5, n_B = 3\}$
-	\item $M$, first ball: $P(b) = 1$ in $[0,1]$
-	\item $P(\text{A scores}\;|\;b) = b$
-	\item $P(D\;|\;b) = \text{Binomial}(5\;|\;5 + 3, \;b)$
-	\item $P^\ast(b_0\;|\;D) = \text{Binomial}(5\;|\; 8, b) \times 1$
-	\item $Z = \sum_{b} \text{Binomial}(5\;|\; 8, b)$ can be calculated numerically
+	\item The only observation we have is the current score, $D = \{n_A = 5, n_B = 3\}$.
+	\item The story describes the model accurately:
+	\begin{enumerate}
+		\item The unknown parameter is the position of the first ball, $0\leq b \leq 1$. 
+		\item Based on the text, we assume a uniform prior, $P(b) = 1$, density for $b \in [0,1]$.
+		\item The probability that $B$ scores a point is $P(\text{B scores}\;|\;b) = b$ for every following roll.
+	\end{enumerate}
+	\item Since we do not know the order in which they scored the points, the likelihood is a binomial distribution with 3 successes, 5+3 attempts, and probability $b$, i.e. $P(D\;|\;b) = \text{Binomial}(3\;|\;5 + 3, \;b)$
+	\item The unnormalized posterior is simply $P^\ast(b\;|\;D) = \text{Binomial}(5\;|\; 8, b) \times 1$.
+	\item We evaluate the normalization constant $Z = \sum_{b} \text{Binomial}(5\;|\; 8, b)$ and the posterior $P(b\;|\;D) = P^\ast(b\;|\;D) / Z$ numerically
 \begin{lstlisting}[language=python]
 import numpy as np
 from scipy.stats import binom
 
 b_arr = np.linspace(0, 1, 1000)
-Pstar_arr = binom.pmf(5, 8, b_arr)
+Pstar_arr = binom.pmf(3, 8, b_arr)
 Z = np.sum(Pstar_arr)
-\end{lstlisting}
-	\item $P(\text{A wins}\;|\;b, D) = 1 - P(\text{B wins}\;|\;b, D) = 1 - (1 - b)^3 = f(b)$
-	\item $P(\text{A wins}\;|\;D) = \sum_{b} f(b) P^\ast(b\;|\;D) / Z$
-\begin{lstlisting}[language=python]
 P_arr = Pstar_arr / Z
-P_Awins = np.sum((1 - (1 - b_arr)**3) * P_arr)
+\end{lstlisting}
+	\item Now, let us determine the probability of $A$ winning the game, as a function of $b$. Player $B$ is in an unfortunate position, he needs to score three times in a row, to win. Any other outcome means player $A$ wins. With this in mind, we can write $P(\text{A wins}\;|\;b, D) = 1 - P(\text{B wins}\;|\;b, D) = 1 - P(\text{B scores 3 times}\;|\;b) = 1 - b^3 =: f(b)$.
+	\item Finally, the probability $A$ winning, considering all values of $b$ is $P(\text{A wins}\;|\;D) = \sum_{b} f(b) \;P(b\;|\;D)$
+\begin{lstlisting}[language=python]
+P_Awins = np.sum((1 - b_arr**3) * P_arr)
 \end{lstlisting}
 	yielding $P(\text{A wins}\;|\;D) = 0.909$
 \end{itemize}
