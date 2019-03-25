@@ -1,49 +1,64 @@
-\section{Exact inference and Maximum Likelihood Estimate}
+\section{Maximum Likelihood Estimate and Exact inference}
 
+The one-size-fits-all method of inferring unknown model parameters is called ``Maximum Likelihood Estimate''. It is calculated by finding the parameter values that maximize the generative probability of the observed data.
 
 \subsection{Maximum likelihood estimate}
 \no MLE-method
 \begin{itemize}
-	\item Data: $D = \{x_1, x_2, \ldots x_N\}$
-	\item Parameter: $\theta$
-	\item Likelihood: $P(x_i\;|\;\theta)$
-	\item Total log likelihood: $L(\theta) = \log P(D\;|\;\theta) = \sum_{i=1}^N \log P(x_i\;|\;\theta)$
-	\item Maximum likelihood estimate $\theta_\text{MLE} = \text{argmax}_{\theta} \log P(D\;|\;\theta)$, \\
-		Numerically: with gradient descent or EM methods, \\
-		Analytically: equating first derivatives to 0, and solving the system of equations.
+	\item We record a series of measurements, $D = \{x_1, x_2, \ldots x_N\}$.
+	\item We construct a model that specifies the probability of each data point $x_i$, $P(x_i\;|\;\theta)$, as a function of model parameter(s) $\theta$, the value(s) of which we wish to infer.
+	\item The sum of the log probability term yields the log likelihood \emph{of the parameter}, \\
+	\be
+		L(\theta) := \log P(D\;|\;\theta) = \log \prod_{i=1}^N P(D\;|\; \theta) = \sum_{i=1}^N \log P(x_i\;|\;\theta)
+	\ee
+	\item Optimizing the value of $\theta$ to get to the maximum of $L$ yields the MLE of $\theta$: 
+	\be
+		\theta_\text{MLE} = \text{argmax}_{\theta} L(\theta),
+	\ee
+	This can be done either
+	\begin{itemize}
+		\item {\bf numerically}, by gradient descent or EM methods (see section \ref{sec:EM}), or
+		\item {\bf analytically}, by setting the first derivatives to 0, and solving the resulting system of equations.
+	\end{itemize}
+		
 \end{itemize}
 
-\no Example 1: Normal model
+\no {\bf Example 1: Normal model} (analytical MLE)
 \begin{itemize}
-	\item Data: $D = \{x_i\}_{i=1}^N$
-	\item Parameters: $\mu \in \mathds{R}$,\quad $\sigma^2 > 0$
-	\item Likelihood: $P(x_i\;|\;\mu,\sigma^2) = \text{Normal}(x_i\;|\;\mu, \sigma^2) = \frac{1}{\sqrt{2\pi \sigma^2}}\exp\left[-\frac{(x_i - \mu)^2}{2\sigma^2}\right]$
-	\item Total log likelihood:
-		\ba
-			L(\mu, \sigma^2) 
-			&=& \sum_{i=1}^N \log \text{Normal} (x_i\;|\; \mu, \sigma^2) = - \frac{N}{2}\log(\sigma^2) - \sum_{i=1}^N \frac{(x_i - \mu)^2}{2\sigma^2} + \text{const.}
-		\ea
-	\item Analytical solution:
+	\item We observe a collection of real values $D = \{x_i \in \mathds{R}\}_{i=1}^N$
+	\item The normal model has two parameters,  $\mu \in \mathds{R}$, and  $\sigma^2 > 0$, which define the probability density of each data point as
+	\be
+		P(x_i\;|\;\mu, \sigma^2) = \text{Normal}(x_i\;|\;\mu, \sigma^2) = \frac{1}{\sqrt{2\pi \sigma^2}}\exp\left[-\frac{(x_i - \mu)^2}{2\sigma^2}\right].
+	\ee
+	\item The log likelihood of the model parameters is
+	\ba
+		L(\mu, \sigma^2) 
+		&=& \sum_{i=1}^N \log \left(\text{Normal} (x_i\;|\; \mu, \sigma^2)\right) = - \frac{N}{2}\log(\sigma^2) - \sum_{i=1}^N \frac{(x_i - \mu)^2}{2\sigma^2} + \text{const.}
+	\ea
+	\item To calculate the formulas for the analytical MLE of $\mu$ and $\sigma^2$, we calculate the first order partial derivatives of $L$, and set them to zero. (With $[\ldots]_\text{MLE}$ with denote that the enclosed formula is evaluated at the MLE point, $(\mu_\text{MLE}, (\sigma^2)_\text{MLE})$.)
 		\ba
 			0 &=& \left[\frac{\partial L}{\partial \mu}\right]_\text{MLE} = \left[\sum_{i=1}^N\frac{\mu - x_i}{\sigma^2}\right]_\text{MLE} \qquad \hspace{2.2cm}\Rightarrow \qquad \mu_\text{MLE} = \frac{1}{N}\sum_{i=1}^N x_i.
 			\\
 			0 &=& \left[\frac{\partial L}{\partial (\sigma^2)}\right]_\text{MLE} = \left[-\frac{N}{2\sigma^2} + \sum_{i=1}^N \frac{(x_i-\mu)^2}{2(\sigma^2)^2}\right]_\text{MLE}\qquad \Rightarrow \qquad (\sigma^2)_\text{MLE} = \frac{1}{N} \sum_{i=1}^N (x_i - \mu_\text{MLE})^2
 		\ea
 \end{itemize}
+This result shows that the empirical mean and empirical variance (the right hand sides of the equations above) are exactly the MLE estimates of $\mu$ and $\sigma^2$, respectively.
 
 
 \newpage
-\no Example 2: Cauchy distribution
+\no {\bf Example 2: Cauchy distribution} (numerical MLE)
 \begin{itemize}
-	\item Data: $D = \{-10, 1, 2, 5, 20\}$
-	\item Parameters: $m\in \mathds{R}$, \quad $s > 0$.
-	\item Likelihood: $P(x_i\;|\;m, s) = \text{Cauchy}(x_i\;|\;m, s) = \frac{1}{s \pi} \frac{1}{1 + \left[(x_i - m)/s\right]^2}$
-	\item Total log likelihood:
+	\item Let's say we observe the following five data point $D = \{-10, 1, 2, 5, 20\}$, and
+	\item we wish to fit a Cauchy distribution to this data, parameterized by $m \in \mathds{R}$ and $s > 0$.
+	\be
+		P(x_i\;|\;m, s) = \text{Cauchy}(x_i\;|\;m, s) = \frac{1}{s \pi} \frac{1}{1 + \left[(x_i - m)/s\right]^2}
+	\ee
+	\item The log likelihood of the model parameters is
 		\be
-			L(m, s) = \sum_{i=1}^N \log \text{Cauchy}(x_i\;|\;m, s) = -N\log(s) - \sum_{i=1}^N\log\!\left(1 + \left[\frac{x_i - m}{s}\right]^2\right)
+			L(m, s) = \sum_{i=1}^N \log \text{Cauchy}(x_i\;|\;m, s) = -N\log(s) - \sum_{i=1}^N\log\!\left(1 + \left[\frac{x_i - m}{s}\right]^2\right) + \text{const.}
 		\ee
 
-	\item Numerical maximization (starting from $m_0 = 0$, $s_0 = 10$):
+	\item Since there is no closed-form solution, we us numerical maximization to find $m_\text{MLE}$ and $s_\text{MLE}$. The following python code uses \texttt{scipy.optimize.minimize()} to find the local maximum near the initial starting point, $m_0 = 0$, $s_0 = 10$.
 \begin{lstlisting}[language=python]
 import numpy as np
 from scipy.optimize import minimize
@@ -68,29 +83,37 @@ s0 = 10
 result = minimize(func_to_minimize, [m0, s0])
 m_MLE, s_MLE = result.x
 \end{lstlisting}
-		yielding $m_\text{MLE} = 2.251, \; s_\text{MLE} = 3.090$, the resulting MLE fit is shown below.
+	\item This yields $m_\text{MLE} = 2.251, \; s_\text{MLE} = 3.090$. Here is the corresponding Cauchy probability density:
 		\begin{figure}[h]
 			\centering
-			\includegraphics[width=0.5\textwidth]{./figs/Cauchy_MLE.pdf}
+			\includegraphics[width=0.44\textwidth]{./figs/Cauchy_MLE.pdf}
 		\end{figure}
 \end{itemize}
+
 
 \newpage
 \subsection{Exact inference examples}
 
-\no Binomial model
+A very small number of models can be inferred exactly. This means, we can derive closed form solutions for the posterior distribution of their parameters. Consequently the posterior function and various summary statistics (e.g. mean and standard deviation) of the model parameter can be calculated exactly and efficiently.
+\\
+
+\no {\bf Binomial model}
 \begin{itemize}
-	\item Data: $D = \{(k_1, n_1), (k_2, n_2), \ldots, (k_N, n_N)\}$, where $k_i$ (successes), $n_i$ (attempts) $\in \mathds{N} \text{ and } k_i \leq n_i$
-	\item Parameter: $p$ (probability of success) $\in [0,1]$, flat prior: $P(p) = 1$, on $[0,1]$
-	\item Likelihood: $P(k_i \;|\; n_i, p) = \text{Binomial} (k_i\;|\;n_i, p) = {n_i \choose k_i} \; p^{k_i} (1-p)^{n_i - k_i}$
-	\item Posterior: 
+	\item We record the number of successes $k_i$ in each of the $i = 1,\ldots N$ experimental runs ($N=1$ is also possible), each of which contains $n_i$ attempts. The data we collect is $D = \{(k_1, n_1), (k_2, n_2), \ldots, (k_N, n_N)\}$, where $0 \leq k_i \leq n_i$, positive integers. 
+	\item (Note: The resulting formulas will show that it is enough to know the total number of successes $k_\text{tot}$ and total number of attempts $n_\text{tot}$, if the same binomial model is responsible for all experimental runs.)
+	\item If each attempt is independent of the others, then the binomial model is justified, and the corresponding probability for a single experiment can be written as
+	\be
+		P(k_i \;|\; n_i, p) = \text{Binomial} (k_i\;|\;n_i, p) = {n_i \choose k_i} \; p^{k_i} (1-p)^{n_i - k_i}
+	\ee
+	which is a function of the success probability $p$, $0 \leq p \leq $, for which we assume a flat prior density: $P(p) = 1$, on the $[0,1]$ interval.
+	\item The posterior of $p$, after considering all experimental runs, can be recognized as a beta distribution:
 	\ba 
 		P(p\;|\;D)
 		&=& \frac{1}{Z} \prod_{i=1}^N \left[p^{k_i} (1-p)^{n_i - k_i}\right] = \frac{1}{Z} p^{k_\text{tot}} (1 - p)^{n_\text{tot} - k_\text{tot}} 
 		\\
 		&=& \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)} p^{\alpha-1} (1-p)^{\beta-1} = \text{Beta}(p\;|\;\alpha = k_\text{tot} + 1,\beta = n_\text{tot} - k_\text{tot} +1),
 	\ea
-	where $k_\text{tot} = \sum_i k_i$ and $n_\text{tot} = \sum_i n_i$. Mean, mode and standard deviation are
+	where $k_\text{tot} = \sum_i k_i$ and $n_\text{tot} = \sum_i n_i$. Using the known formulas of the beta distribution, we can write the mean, mode and standard deviation of $p$ as 
 	\ba
 		&& \mathbb{E}(p) = \frac{\alpha}{\alpha + \beta} = \frac{k_\text{tot} + 1}{n_\text{tot} + 2}, 
 		\quad 
@@ -98,37 +121,48 @@ m_MLE, s_MLE = result.x
 		\\ 
 		&& \text{std}(p) = \frac{\sqrt{\alpha \beta}}{(\alpha + \beta) \sqrt{\alpha + \beta + 1}} = \frac{\sqrt{(k_\text{tot} + 1)(n_\text{tot} - k_\text{tot} + 1)}}{(n_\text{tot} + 2)\sqrt{n_\text{tot} + 3}}
 	\ea
+	\item Note: The mode of the posterior (calculated under flat prior) coincides with the maximum likelihood estimate, $p_\text{MLE} = k_\text{tot} / n_\text{tot}$.
 \end{itemize}
+\vspace{0.5cm}
 
-\no Poisson model
+\no {\bf Poisson model}
 \begin{itemize}
-	\item Data: $D = \{k_1, k_2, \ldots k_N\}$, where $k_i$ (number of events) $\in \mathds{N}$
-	\item Parameters: $\lambda$ (expected number of events) $ > 0$, flat prior: $P(\lambda) = \text{const.}$
-	\item Likelihood: $P(k_i\;|\;\lambda) = \text{Poisson}(k\;|\;\lambda) = e^{-\lambda} \frac{\lambda^{k_i}}{k_i!}$
-	\item Posterior: 
+	\item Within each of the $i=1,\ldots N$ measurement windows, we observe $k_i$ number of events. The collected data is $D = \{k_1, k_2, \ldots k_N\}$, where $k_i \geq 0$, positive integers.
+	\item (Note: The formula of the posterior will show that knowing the total number of events $k_\text{tot}$ and the number of windows $N$ is enough.)
+	\item The Poisson model for a single measurement window prescribes the probability 
+	\be
+		P(k_i\;|\;\lambda) = \text{Poisson}(k\;|\;\lambda) = e^{-\lambda} \frac{\lambda^{k_i}}{k_i!},
+	\ee 
+	where $\lambda > 0$ is the ``typical number of observations'', for which we assume a flat (and improper) prior: $P(\lambda) = \text{const.}$
+	\item The posterior of $\lambda$ turns out to be a gamma distribution:
 	\ba
 		P(\lambda\;|\;D) 
 		&=& \frac{1}{Z} \prod_{i=1}^N\left[e^{-\lambda} \lambda^{k_i}\right] = \frac{1}{Z} e^{-N\lambda} \lambda^{k_\text{tot}}
 		= \frac{\beta^\alpha}{\Gamma(\alpha)} \lambda^{\alpha -1} e^{-\beta\lambda} = \text{Gamma}(\lambda\;|\; \alpha = k_\text{tot} + 1, \beta = N),
 	\ea
-	where $k_\text{tot} = \sum_i k_i$. Mean, mode and standard deviation are
+	where $k_\text{tot} = \sum_i k_i$. Using the known formulas for the gamma distribution, the mean, mode and standard deviation of $\lambda$ can be written as
 	\ba
 		\mathbb{E}(\lambda) = \frac{\alpha}{\beta} = \frac{k_\text{tot} + 1}{N},\quad \text{mode}(\lambda) = \frac{\alpha - 1}{\beta} = \frac{k_\text{tot}}{N},\quad
 		\text{std}(\lambda) = \frac{\sqrt{\alpha}}{\beta} = \frac{\sqrt{k_\text{tot} + 1}}{N}
 	\ea
+	\item Note: The mode of the posterior (calculated under flat prior) coincides with the maximum likelihood estimate, $\lambda_\text{MLE} = k_\text{tot} / N$.
 \end{itemize}
+\vspace{0.5cm}
 
-\newpage
-\no Multinomial model
+\no {\bf Multinomial model}
 \begin{itemize}
-	\item Data: $D = \{(k_{1,1}, k_{1,2}, \ldots k_{1,M}), (k_{2,1}, k_{2,2}, \ldots k_{2, M}), \ldots (k_{N,1}, k_{N,2}, \ldots k_{N, M})\}$, where $k_{i,j}$ (counts of outcome $j$) $\in \mathds{N}$, and $\sum_{j}k_{i,j} = 1, \; \forall i$.
-	\item Parameters: $p = (p_1, p_2, \ldots p_M)$, where $p_j$ (probability of outcome $j$) $ > 0$ and $\sum_j p_j = 1$; flat prior: $P(p) = \text{const.}$
-	\item Likelihood: $P(\{k_{i,j}\}_{j=1}^M\;|\;p) = \text{Multinomial}(\{k_{i,j}\}_{j=1}^M\;|\;p) = k_{i,\text{tot}}! \prod_j \frac{p_j^{k_{i,j}}}{k_{i,j}!}$
-	\item Posterior:
+	\item Similarly to the binomial model, we perform a series of experimental runs, $i = 1,\ldots N$, each consisting some number of attempts, each of which can result in $M$ different outcomes. For the $i$th experimental run the collected data is $D_i = (k_{i,1}, k_{i,2}, \ldots k_{i,M})$, where $k_{i,j} \geq 0$ is the number of times outcome $j$ was found in experiment $i$. The complete observed data is $D = \{D_1, D_2, \ldots D_N\}$.
+	\item (Note: The formulas for the posterior will show that it is enough to know the number of each outcomes aggregated across all runs, $k_{\text{tot}, j}$, if the same multinomial process is responsible for all runs.)
+	\item The multinomial model (which is justified if the attempts are independent from each other) prescribes the probability for the outcome vector $\{k_{i,j}\}_{j=1}^M$ of one experiment
+	\be
+		P(\{k_{i,j}\}_{j=1}^M\;|\;p) = \text{Multinomial}(\{k_{i,j}\}_{j=1}^M\;|\;p) = k_{i,\text{tot}}! \prod_j \frac{p_j^{k_{i,j}}}{k_{i,j}!},
+	\ee
+	where each element of the probability vector $p = (p_1, p_2, \ldots p_M)$, $0 \leq p_j \leq 1$ is the probability of outcome $j$. Since one of the outcomes is certain to happen, $\sum_j p_j = 1$. We assume a flat prior for the probability vector $P(p) = \text{const.}$ (on the $M-1$ dimensional unit simplex).
+	\item The posterior of $p$, after considering all runs, can be written as a Dirichlet distribution:
 	\ba
 		P(p\;|\;D) &=& \frac{1}{Z} \prod_{i=1}^N \prod_{j=1}^M (p_j)^{k_{i,j}} = \frac{1}{Z} \prod_{j=1}^{M} (p_j)^{k_{\text{tot}, j}} = \Gamma(\alpha_\text{tot}) \prod_{j=1}^M \frac{(p_j)^{\alpha_j - 1}}{\Gamma(\alpha_j)} = \text{Dirichlet}(p\;|\;\alpha_j = k_{\text{tot}, j} + 1),
 	\ea
-	where $k_{i,\text{tot}} = \sum_j k_{i,j}$, $k_{\text{tot}, j} = \sum_i k_{i,j}$, and $\alpha_\text{tot} = \sum_j \alpha_j = k_\text{tot,tot} + M$. Mean, mode and marginal standard deviation are
+	where $k_{\text{tot}, j} = \sum_i k_{i,j}$, and $\alpha_\text{tot} = \sum_j \alpha_j = k_\text{tot,tot} + M$. Mean, mode and marginal standard deviation are
 	\ba
 		&& \mathbb{E}(p_j) = \frac{\alpha_j}{\alpha_\text{tot}} = \frac{k_{\text{tot},j} + 1}{k_\text{tot,tot} + M},
 		\quad
@@ -136,30 +170,43 @@ m_MLE, s_MLE = result.x
 		\\
 		&& \text{std}(p_j) = \frac{\sqrt{\alpha_j(\alpha_\text{tot} - \alpha_j)}}{\alpha_\text{tot}\sqrt{\alpha_\text{tot} + 1}} = \frac{\sqrt{(k_{\text{tot},j} + 1) (k_{\text{tot,tot}} - k_{\text{tot},j} + M - 1)}} {(k_{\text{tot,tot}} + M) \sqrt{k_{\text{tot,tot}} + M + 1}}
 	\ea
+	\item Note: The mode of the posterior (calculated under flat prior) coincides with the maximum likelihood estimate, $p_{\text{MLE},j} = k_{\text{tot},j} / k_\text{tot,tot}$.
 \end{itemize}
+\vspace{0.5cm}
 
-\no Exponential model
+\newpage
+\no {\bf Exponential model}
 \begin{itemize}
-	\item Data: $D = \{t_1, t_2, \ldots t_N\}$, where $t_i$ (waiting times) $> 0$
-	\item Parameter: $\gamma$ (rate) $> 0$, flat prior: $P(\gamma) = \text{const.}$
-	\item Likelihood: $P(t_i\;|\;\gamma) = \text{Exponential}(t_i\;|\;\gamma) = \gamma e^{-\gamma t_i}$
-	\item Posterior:
+	\item We observe a sequence of events, $i = 1,\ldots N$. We record the waiting times $t_i$ between event $i-1$ and event $i$ ($t_1$ is the waiting time from the start of observation until the first event). The data is $D = \{t_1, t_2, \ldots t_N\}$, where $t_i > 0$.
+	\item (Note: The formula for the posterior will show that, if the events are generated by a Poisson process, then it is enough to know the total elapsed time $t_\text{tot}$ and the number of events $N$.)
+	\item If the events are generated by a Poisson process (i.e. they are independent from each other and the elapsed time), then the waiting times are exponentially distributed:
+	\be
+		P(t_i\;|\;\gamma) = \text{Exponential}(t_i\;|\;\gamma) = \gamma e^{-\gamma t_i},
+	\ee
+	where $\gamma > 0$ is the rate of events, for which we assume a flat (and improper) prior: $P(\gamma) = \text{const.}$
+	\item The posterior of $\gamma$ can be written as a gamma distribution:
 	\ba
 		P(\gamma\;|\;D) &=& \frac{1}{Z} \prod_{i=1}^N \left[\gamma e^{-\gamma t_i}\right] = \frac{1}{Z} \gamma^N e^{-\gamma t_\text{tot}} = \frac{\beta^\alpha}{\Gamma(\alpha)} \gamma^{\alpha-1} e^{-\beta\gamma} = \text{Gamma}(\gamma\;|\;\alpha = N+1, \beta = t_\text{tot}),
 	\ea
-	where $t_\text{tot} = \sum_i t_i$. Mean, mode, standard deviation are
+	where $t_\text{tot} = \sum_i t_i$. Using the known formulas for the gamma distribution, we can write the mean, mode, standard deviation of $\gamma$ as 
 	\be
 		\mathbb{E}(\gamma) = \frac{\alpha}{\beta} = \frac{N+1}{t_\text{tot}},\quad \text{mode}(\gamma) = \frac{\alpha -1}{\beta} = \frac{N}{t_\text{tot}}, \quad\text{std}(\gamma) = \frac{\sqrt{\alpha}}{\beta} = \frac{\sqrt{N+1}}{t_\text{tot}}
 	\ee
+	\item Note: The mode of the posterior (calculated under flat prior) coincides with the maximum likelihood estimate, $\gamma_\text{MLE} = N / t_\text{tot}$.
+	\item Note: The result is meaningful even for $N=0$, which corresponds to a $t_\text{tot}$-long measurement session during which no event was observed. This results in a posterior which is identical to an exponential distribution: $P(\gamma\;|\;D) = \text{Gamma}(\gamma\;|\;\alpha = 1, \;\beta = t_\text{tot}) = t_\text{tot} e^{-t_\text{tot} \gamma} = \text{Exponential}(\gamma\;|\;t_\text{tot})$.
 \end{itemize}
+\vspace{0.5cm}
 
-\newpage
-\no Normal
+
+\no {\bf Normal}
 \begin{itemize}
-	\item Data: $D = \{x_1, x_2, \ldots x_N\}$, where $x$ (value) $ \in \mathds{R}$
-	\item Parameters: $\mu$ (expected value) $\in \mathds{R}$, $\sigma^2$ (variance) $ >0$, uninformative prior: $P(\mu, \sigma^2) = \text{const.}$
-	\item Likelihood: $P(x_i\;|\;\mu, \sigma^2) = \text{Normal}(x_i\;|\;\mu, \sigma^2) = \frac{1}{\sqrt{2\pi \sigma^2}} \exp\!\left[-\frac{(x_i - \mu)^2}{2\sigma^2}\right]$
-	\item Posterior:
+	\item We observe one-dimensional data points $D = \{x_1, x_2, \ldots x_N\}$, where $x \in \mathds{R}$.
+	\item The normal model prescribes the following probability for each data point:
+	\be
+		P(x_i\;|\;\mu, \sigma^2) = \text{Normal}(x_i\;|\;\mu, \sigma^2) = \frac{1}{\sqrt{2\pi \sigma^2}} \exp\!\left[-\frac{(x_i - \mu)^2}{2\sigma^2}\right],
+	\ee
+	as a function of $\mu$ (expected value) $\in \mathds{R}$, and $\sigma^2$ (variance) $ >0$, for which we assume a flat (and improper) priors: $P(\mu, \sigma^2) = \text{const.}$
+	\item With the notations, $m = \frac{1}{N}\sum_i x_i$ being the empirical mean, $s^2 = \frac{1}{N}\sum_i (x_i - m)^2$ being the empirical variance, the joint posterior of $\mu, \sigma^2$ can be written as
 	\ba
 		P(\mu, \sigma^2\;|\;D) 
 		&=& \frac{1}{Z}\prod_{i=1}^N \left\{\frac{1}{\sqrt{\sigma^2}} \exp\!\left[-\frac{(x_i-\mu)^2}{2\sigma^2}\right]\right\} = \frac{1}{Z} \left(\frac{1}{\sigma^2}\right)^{N/2} \exp\!\left[-\frac{Ns^2 + N(\mu - m)^2}{2\sigma^2}\right]
@@ -167,14 +214,14 @@ m_MLE, s_MLE = result.x
 		&=&
 		\frac{\sqrt{\lambda}}{\sqrt{2\pi \sigma^2}}\frac{\beta^\alpha}{\Gamma(\alpha)} \left(\frac{1}{\sigma^2}\right)^{\alpha + 1} \exp\!\left[-\frac{2\beta + \lambda(\mu - \mu_c)^2}{2\sigma^2}\right]
 		\\
-		&=& \text{Normal-Inverse-Gamma}\Big(\mu, \sigma^2\;\Big|\; \alpha = \frac{N-3}{2},\; \beta = \frac{Ns^2}{2},\; \mu_c = m,\; \lambda=N\Big),
+		&=& \text{Normal-Inverse-Gamma}\Big(\mu, \sigma^2\;\Big|\; \alpha = \frac{N-3}{2},\; \beta = \frac{Ns^2}{2},\; \mu_c = m,\; \lambda=N\Big).
 	\ea
-	where $m = \frac{1}{N}\sum_i x_i$ is the empirical mean, $s^2 = \frac{1}{N}\sum_i (x_i - m)^2$ is the empirical variance. 
-	The mode is identical to the MLE result
+	This is a two-dimensional joint distribution, the mode of which is at
 	\be
 		\text{mode}(\mu, \sigma^2) = (m, s^2).
 	\ee
-	The marginal, and mean, mode and standard deviation of $\mu$ is
+	
+	\item Integrating out $\sigma^2$ results in the marginal distribution of $\mu$:
 	\ba
 		P(\mu\;|\;D) 
 		&=& \sum_{\sigma^2} P(\mu, \sigma^2\;|\;D) = \frac{\Gamma\left(\frac{N-2}{2}\right)}{\Gamma\left(\frac{N-3}{2}\right)} \frac{1}{\sqrt{\pi s^2}}\left[1 + \frac{(\mu - m)^2}{s^2}\right]^{-(N-2)/2}
@@ -183,19 +230,37 @@ m_MLE, s_MLE = result.x
 		\\ 
 		&=& \text{t-distr}\Big(\mu\;\Big|\;\text{loc}=m,\; \text{scale}=\frac{s}{\sqrt{N-3}},\; \nu=N-3\Big),
 	\ea
+	where $\nu$ is the ``degrees of freedom'' of the Student's t distribution. 
+	Using the known formulas for the shifted and scaled Student's t distribution, we can write the mean, \emph{marginal} mode and standard deviation of $\mu$ as
 	\be
 		\mathbb{E}(\mu) = m,\quad \text{mode}(\mu) = m,\quad \text{std}(\mu) = \frac{s}{\sqrt{N-3}} \sqrt{\frac{\nu}{\nu-2}} = \frac{s}{\sqrt{N-5}},
 	\ee
-	where $\nu$ is the ``degrees of freedom'' of the Student's t-distribution. The marginal, and mean, mode and standard deviation of $\sigma^2$ is
+
+	\item Integrating out $\mu$ results in the marginal distribution of $\sigma^2$:
 	\ba
 		P(\sigma^2\;|\;D) &=& \sum_\mu P(\mu, \sigma^2\;|\;D) = \frac{\beta^\alpha}{\Gamma(\alpha)}\left(\frac{1}{\sigma^2}\right)^{\alpha+1} \exp\left(-\frac{\beta}{\sigma^2}\right)
 		\\
 		&=& \text{Inverse-Gamma}\Big(\sigma^2\;\Big|\;\alpha = \frac{N-3}{2},\;\beta = \frac{Ns^2}{2}\Big)
 	\ea
+	Using the known formulas for the inverse gamma distribution, we can write the mean, \emph{marginal} mode and standard deviation of $\sigma^2$ as
+	\ba
+		&& \mathbb{E}(\sigma^2) = \frac{\beta}{\alpha - 1} = s^2 \frac{N}{N-5},\quad \text{mode}(\sigma^2) = \frac{\beta}{\alpha + 1} = s^2\frac{N}{N-1} \\
+		&& \text{std}(\sigma^2) = \frac{\beta}{(\alpha-1)\sqrt{\alpha-2}} = s^2\frac{\sqrt{2} N}{(N-5)\sqrt{N-7}}
+	\ea
+
+	\item Note: While the mean and the standard deviation are unaffected by marginalization, the mode, in general, depends on whether we evaluate it on the joint distribution  $P(\mu, \sigma^2\;|\;D)$ or on the marginals $P(\mu\;|\;D)$ and $P(\sigma^2\;|\;D)$.  With the assumption of the flat prior, the mode of $\mu$ happens to be the same both in the joint in and the marginal, and it coincides with its maximum likelihood estimate. 
 	\be
-		\mathbb{E}(\sigma^2) = \frac{\beta}{\alpha - 1} = s^2 \frac{N}{N-5},\quad \text{mode}(\sigma^2) = \frac{\beta}{\alpha + 1} = s^2\frac{N}{N-1}, \quad \text{std}(\sigma^2) = \frac{\beta}{(\alpha-1)\sqrt{\alpha-2}} = s^2\frac{\sqrt{2} N}{(N-5)\sqrt{N-7}}
+		[\text{mode}(\mu, \sigma^2)]_1 = \text{mode}(\mu) = m = \frac{1}{N} \sum_{i=1}^N x_i= \mu_\text{MLE}
 	\ee
+	With the assumption of flat prior, the mode of $\sigma^2$ in the joint is identical to its maximum likelihood estimate, while the mode of the $\sigma^2$ marginal coincides with the widely-used unbiased estimator of $\sigma^2$.
+	\ba
+		[\text{mode}(\mu, \sigma^2)]_2 = s^2 = \frac{1}{N} \sum_{i=1}^N (x_i - m)^2 = (\sigma^2)_\text{MLE}& \neq & \text{mode}(\sigma^2) = s^2\frac{N}{N-1} = \frac{1}{N-1} \sum_{i=1}^N (x_i - m)^2
+	\ea
 \end{itemize}
+
+\vspace{0.5cm}
+
+The next page shows a graphical summary of the exactly-solvable models discussed above. The left column features a typical distribution the model prescribes for the data. The right column shows a typical posterior probability density for the model parameters.
 
 \newpage
 \begin{figure}[!]
