@@ -1,48 +1,71 @@
 \newpage
 \section{Graphical models}
+As the number of variables we wish to model increases the number of different models increases faster than exponentially. A common technique to get a handle on the dependencies of many real-world variables is to organize them into connected structures the components of which are simple and easily interpretable. This allows us to construct hierarchies, a powerful method for synthesizing knowledge.
 
+Representing variables with the nodes and dependencies with the edges of a graph is a powerful method to gain a bird's eye view of the model and reason about statistical dependencies between the variables under different fixed conditions. This section introduces elements of a graphical representation technique using directed, acyclic graphs. (Other methods are undirected graphs and factor graphs.)
 
 \subsection{Elements}
 \begin{itemize}
-	\item $P(x, y) = P(y\;|\;x) P(x)$ is represented by 
+	\item A {\bf directed connection} from variable $x$, to variable $y$, indicates that we intend to describe their joint distribution using the conditional probability $P(y\;|\;x)$, i.e. $P(x, y) = P(y\;|\;x) P(x)$. The graphical representation of this is
 	\begin{figure}[h]
 	\centering
-		\includegraphics[height=4mm]{./figs/04-xy.pdf} 
+		\includegraphics[height=3.4mm]{./figs/04-xy.pdf} 
 	\end{figure}
 
-	\item $P(x, y, z) = P(y\;|\;z,x) P(z\;|\;x) P(x)$. \\ 
-	 If $P(y\;|\;z,x) = P(y\;|\;z)$, then it is represented by a {\bf chain}
-
+	\item A {\bf chain} of connections, which is formed by two directed connections, one from $x$ to $z$ and another from $z$ to $y$, indicates that we intend to describe the joint as $P(x, y, z) = P(y\;|\;z) P(z\;|\;x) P(x)$. This is represented by a the following graph.
 	\begin{figure}[h]
 	\centering
-		\includegraphics[height=4mm]{./figs/04-xzy.pdf} 
+		\includegraphics[height=3.4mm]{./figs/04-xzy.pdf} 
 	\end{figure}
 
-	Note: $y \independent x \;|\;z$, but $y \not\independent x\; | \; \emptyset$.
+	Note: This graph represents a restriction to the set of distributions for the joint, because the variable $z$ separates $x$ and $y$, indicating that $x$ and $y$ become independent once we fix the value of $z$ (to any value), i.e. $P(x,y\;|\;z) = P(x\;|\;z) P(y\;|\;z)$. This, we write as $y \independent x \;|\;z$. On the other hand, if $z$ is unknown, $x$ and $y$ may be dependent, which we write as $y \not\independent x\; | \; \emptyset$. The $z$ variable in the middle in such situations is called the ``mediator'' between $x$ and $y$.
 
-	\item $P(x, y_1, y_2) = P(y_1, y_2\;|\;x) P(x)$. \\
-	If $P(y_1, y_2 \;|\; x) = P(y_1\;|\;x) P(y_2\;|\;x)$, then it is represented by a {\bf fork}
-
+	\item A {\bf fork} is formed when two connections originate from one variable $x$ and connect to two different variables $y_1$ and $y_2$, indicating that we intend to describe their joint as $P(x, y_1, y_2) = P(y_1\;|\;x) P(y_2\;|\;x) P(x)$. This is represented by a the following graph.
 	\begin{figure}[h]
 	\centering
-		\includegraphics[height=15mm]{./figs/04-xy1y2.pdf} 
+		\includegraphics[height=12mm]{./figs/04-xy1y2.pdf} 
 	\end{figure}
 
-	Note: $y_1 \independent y_2 \;|\;x$, but $y_1 \not\independent y_2\; | \; \emptyset$.
+	Note: This dependency structure implied by this graph (on its own) is identical to the dependency structure of the chain, i.e. $y_1 \independent y_2 \;|\;x$, and $y_1 \not\independent y_2\; | \; \emptyset$, but the interpretation is different. Variables $x$ is interpreted as a ``common cause'' for $y_1$ and $y_2$.
 
-	\item $P(x_1, x_2, y) = P(y\;|\;x_1, x_2) P(x_1, x_2)$. \\
-	If $P(x_1, x_2) = P(x_1) P(x_2)$, then it is represented by a {\bf collider}
-
+	\item The {\bf collider}, which is formed by directed connections from two variables $x_1$ and $x_2$ to one variable $y$, is the most interesting graphical element. It indicates that we believe that $x_1$ and $x_2$ are independent variables, i.e. the we expect to write the joint as $P(x_1, x_2, y) = P(y\;|\;x_1, x_2) P(x_1) P(x_2)$. This is represented by a the following graph.
 	\begin{figure}[h!]
 	\centering
-		\includegraphics[height=15mm]{./figs/04-x1x2y.pdf} 
+		\includegraphics[height=12mm]{./figs/04-x1x2y.pdf} 
 	\end{figure}
 
-	Note: $x_1 \independent x_2\;|\;\emptyset$, but $x_1 \not\independent x_2\;|\;y$ (!).
+	Note: By definition, this dependency structure implies $x_1 \independent x_2\;|\;\emptyset$, however the same does not hold if the value of $y$ is fixed, $x_1 \not\independent x_2\;|\;y$. This effect is called ``explaining away''.
 	
 \end{itemize}
 
-\no Examples
+\subsection{General rules}
+
+\no {\bf Converting between graph and formula}\\ 
+The general rules for converting between a graphical representation and the formula of the joint distribution are the following
+\begin{itemize}
+	\item Each variable $x$ (node of the graph) contributes a factor $P(x\;|\ldots)$ to the formula. The only question is what should go in place of $\ldots$ in the condition part.
+
+	\item If the node has no incoming edges, the condition part should be left empty, i.e. the factor is $P(x\;|\;\emptyset) = P(x)$.
+
+	\item If the node has incoming connections, the variables from which the connections originate (``parents'') should be listed in the condition part, i.e. the factor is $P(x\;|\;\text{parents of }x)$.
+\end{itemize}
+
+
+\no {\bf d-separation}\\
+Two variables are said to be ``d-separated'' if their independence (under specific conditions) is implied by the graph structure. For the general case of trying to determine independence between $x$ and $y$ under the condition of keeping variables $z_1, z_2, \ldots z_c$ fixed, the steps are the following.
+\begin{enumerate}
+	\item List all possible paths between $x$ and $y$ through the graph disregarding the directions of the connections (i.e. moving in the opposite direction of the connections is also allowed). Each node is allowed to be visited at most once in every path.
+
+	\item For each node on each path, mark the way it is traversed with respect to the direction of the connections: mediator ($\leftarrow\leftarrow$ or $\rightarrow\rightarrow$), fork ($\leftarrow\rightarrow$) or collider ($\rightarrow\leftarrow$). (Note: It is possible for a node with three or more connections to be traversed differently by different paths.)
+
+	\item Disregard all paths of which any of the mediator or fork nodes is among the $\{z_1, z_2, \ldots z_c\}$ variables, on which we are conditioning. These paths are ``blocked''.
+
+	\item On the remaining paths, investigate the colliders. Going against our intuition, a collider blocks the path if {\bf neither} itself {\bf nor} any of its descendents is among $\{z_1, z_2, \ldots z_c\}$. (E.g. if we do not condition on any variable, then all paths that traverse at least one node in collider fashion are blocked.) Disregard these paths.
+
+	\item If all paths are blocked, in one way or another, $x$ and $y$ are conditionally independent, conditioned on the variables $z_1, z_2, \ldots z_c$, which we write as $x \independent y\;|\; z_1, z_2, \ldots z_c$.
+\end{enumerate}
+
+\no {\bf Examples}
 \begin{itemize}
 	\item $P(a, b, c, d, e) = P(a)P(d) P(b\;|\;a,d) P(c\;|\;b) P(e\;|\;c) P(f\;|\;c)$ is represented by 
 
@@ -50,6 +73,7 @@
 	\centering
 		\includegraphics[height=15mm]{./figs/04-abcdef.pdf} 
 	\end{figure}
+	Some examples of d-separation are $e \independent f \;|\; c$,\quad $e \independent a \;|\; b$ and $a \independent d \;|\;\emptyset$, (but $a \not\independent d \;|\;b$ and $a \not\independent d \;|\;f$).
 
 	\item $P(a, b, c, d, e, f) = P(a) P(c\;|\;a) P(b\;|\;a) P(f\;|\;c) P(d\;|\;b, c) P(e\;|\;d)$ is represented by
 
@@ -57,6 +81,7 @@
 	\centering
 		\includegraphics[height=20mm]{./figs/04-abcdef2.pdf} 
 	\end{figure}
+	Some examples of d-separation are $b \independent f \;|\; a$ and  $b \independent f \;|\; a,c,e$ (but $b \not\independent f \;|\; a,d$ and $b \not\independent f \;|\; a,e$).
 \end{itemize}
 
 \newpage
@@ -65,36 +90,36 @@
 	\item Fire causes Smoke, Smoke causes Alarm to set off, but given Smoke, there's no correlation between Fire and Alarm, i.e. $\text{Fire}\;\independent\;\text{Alarm}\;|\;\text{Smoke}$. This is represented by a chain
 	\begin{figure}[h!]
 	\centering
-		\includegraphics[height=2.8mm]{./figs/04-fire-smoke-alarm.pdf} 
+		\includegraphics[height=2.5mm]{./figs/04-fire-smoke-alarm.pdf} 
 	\end{figure}
 
 	\item Both rain and the Sprinkler can cause the formation of a Puddle, they are however independent (until we observe the Puddle), i.e. $\text{Rain}\;\independent\;\text{Sprinkler}\;|\;\emptyset$. This is represented by a collider
 	\begin{figure}[h!]
 	\centering
-		\includegraphics[height=14mm]{./figs/04-rain-puddle-sprinkler.pdf} 
+		\includegraphics[height=12.5mm]{./figs/04-rain-puddle-sprinkler.pdf} 
 	\end{figure}
 
 	\item Heat causes both Ice Cream sales and Crime to increase, but once we know there was a heatwave, they become independent, i.e. $\text{Crime}\;\independent\;\text{Ice Cream}\;|\;\text{Heat}$. This is represented by a fork
 	\begin{figure}[h!]
 	\centering
-		\includegraphics[height=12mm]{./figs/04-heat-icecream-crime.pdf} 
+		\includegraphics[height=10.5mm]{./figs/04-heat-icecream-crime.pdf} 
 	\end{figure}
 
 	\item Education affects Political View, which affects both Party membership and Voting behavior. This can be represented as
 	\begin{figure}[h!]
 	\centering
-		\includegraphics[height=16mm]{./figs/04-education-vote.pdf} 
+		\includegraphics[height=14.4mm]{./figs/04-education-vote.pdf} 
 	\end{figure}
 
 	\item Education and Experience both affect Salary, but Education also affects Experience. This can be represented as
 	\begin{figure}[h!]
 	\centering
-		\includegraphics[height=20mm]{./figs/04-education-salary.pdf} 
+		\includegraphics[height=18mm]{./figs/04-education-salary.pdf} 
 	\end{figure}
 \end{itemize}
 
 \subsection{Plate notation}
-
+When a series of variables are connected to the rest of the graph in identical fashion, we simplify our notation by placing a representative of the variable series inside a box (``on a plate'') in place of the series, and label the box with the length of the series.
 \begin{figure}[h!]
 \centering
 	\includegraphics[height=30mm]{./figs/04-plate-notation.pdf}
