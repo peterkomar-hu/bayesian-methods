@@ -40,7 +40,8 @@ Representing variables with the nodes and dependencies with the edges of a graph
 
 \subsection{General rules}
 
-\no {\bf Converting between graph and formula}\\ 
+\no {\bf Converting between graph and formula}
+
 The general rules for converting between a graphical representation and the formula of the joint distribution are the following
 \begin{itemize}
 	\item Each variable $x$ (node of the graph) contributes a factor $P(x\;|\ldots)$ to the formula. The only question is what should go in place of $\ldots$ in the condition part.
@@ -51,7 +52,8 @@ The general rules for converting between a graphical representation and the form
 \end{itemize}
 
 
-\no {\bf d-separation}\\
+\no {\bf d-separation}
+
 Two variables are said to be ``d-separated'' if their independence (under specific conditions) is implied by the graph structure. For the general case of trying to determine independence between $x$ and $y$ under the condition of keeping variables $z_1, z_2, \ldots z_c$ fixed, the steps are the following.
 \begin{enumerate}
 	\item List all possible paths between $x$ and $y$ through the graph disregarding the directions of the connections (i.e. moving in the opposite direction of the connections is also allowed). Each node is allowed to be visited at most once in every path.
@@ -119,7 +121,7 @@ Two variables are said to be ``d-separated'' if their independence (under specif
 \end{itemize}
 
 \subsection{Plate notation}
-When a series of variables are connected to the rest of the graph in identical fashion, we simplify our notation by placing a representative of the variable series inside a box (``on a plate'') in place of the series, and label the box with the length of the series.
+When a sequence of variables are connected to the rest of the graph in identical fashion, we simplify our notation by placing a representative of the variables inside a box (``on a plate'') in place of the series, and label the box with the length of the sequence.
 \begin{figure}[h!]
 \centering
 	\includegraphics[height=30mm]{./figs/04-plate-notation.pdf}
@@ -127,15 +129,21 @@ When a series of variables are connected to the rest of the graph in identical f
 
 \newpage
 \subsection{Hierarchical models}
+Using the graphical representation, we can define and understand models of multiple levels of hierarchy with ease. 
+
+The usual difficulty that comes with multi-level models is the rapid increase of the number of parameters. If not kept in check, this leads to overfitting (in MLE context) or inefficient sampling (in MCMC context). Once in a while, variables on intermediate levels of a hierarchical model can be marginalized out, giving rise to a log likelihood function with fewer parameters that enable a more efficient and more robust solutions.
+\\
 
 \no {\bf Beta-Binomial model}
+
+Often different experimental runs, each of which contain observations with binary outcomes, have similar but not identical success rates. E.g. the win rate of athletes in a specific league is expected to be similar (since they are in the same league), but we certainly can't rule our individual differences. In such a case, the Beta-Binomial model can robustly estimate the distribution of win rates in the league.
 \begin{itemize}
-	\item Data: $D = \{(k_i, n_i)\}_{i=1}^N$, where $k_i$(successes) $\in\{0, 1, \ldots n_i\}$, and $n_i$(attempts) $\in \mathds{N}$
+	\item We observe $N$ experimental runs, where in the $i$th experiment we find  $k_i$ successes out of $n_i$ attempts. The data is $D = \{(k_i, n_i)\}_{i=1}^N$, where $0 \leq k_i\leq n_i$, with $k_i, n_i \in \mathds{N}$.
 
 	\item Model: 
 		\begin{itemize}
-			\item level 1: the parameters, $p = \{p_i\}_{i=1}^N$, where $p_i \in [0,1]$, define $P(k_i\;|\;n_i, p_i) = \text{Binomial}(k_i\;|\;n_i, p_i)$
-			\item level 2: the parameters, $\alpha, \beta$ (both $>0$), define $P(p_i\;|\;\alpha, \beta) = \text{Beta}(p_i\;|\;\alpha, \beta)$.
+			\item One level 1, we model number of successes with individual success rates, $p = \{p_i\}_{i=1}^N$, where $p_i \in [0,1]$, and assume that measurements are independent (given $p$). This leads to $k_i$ being  distributed as $P(k_i\;|\;n_i, p_i) = \text{Binomial}(k_i\;|\;n_i, p_i)$.
+			\item On level 2, we assume that the success rates come from a Beta distribution with parameters, $\alpha, \beta$ (both $>0$), i.e. define $P(p_i\;|\;\alpha, \beta) = \text{Beta}(p_i\;|\;\alpha, \beta)$.
 		\end{itemize}
 		This hierarchy can be represented as
 		\begin{figure}[h!]
@@ -143,39 +151,47 @@ When a series of variables are connected to the rest of the graph in identical f
 			\includegraphics[height=26mm]{./figs/04-BetaBinomial.pdf}
 		\end{figure}
 
-	\item Joint likelihood:
+	\item If we treat the success rates as hidden data, we can write the likelihood as
 	\be
 		P(D, p\;|\;\alpha,\beta) = \prod_{i=1}^N\Big[\text{Binom}(k_i\;|\;n_i, p_i) \;\text{Beta}(p_i\;|\;\alpha, \beta)\Big]
 	\ee
 
-	\item Marginal likelihood:
+	\item For this model, we can marginalize out $p$ analytically, yielding a more useful form of the likelihood:
 	\ba
 		P(D\;|\;\alpha, \beta) &=& \prod_{i=1}^N\left[\int\!dp_i\,\text{Binom}(k_i\;|\;n_i, p_i) \;\text{Beta}(p_i\;|\;\alpha, \beta)\right] = \prod_{i=1}^N\Big[\text{Beta-Binom}(k_i\;|\;n_i, \alpha, \beta)\Big]
 		\\
 		\text{where}&&
 		\text{Beta-Binom}(k\;|\;n, \alpha, \beta) = \frac{\Gamma(n+1)\Gamma(\alpha + \beta)}{\Gamma(n + \alpha + \beta)} \frac{\Gamma(k+\alpha)}{\Gamma(k+1) \Gamma(\alpha)} \frac{\Gamma(n - k + \beta)}{\Gamma(n-k + 1) \Gamma(\beta)}
 	\ea
+	Using the definition of the beta function, $B(x,y) = \Gamma(x)\Gamma(y) / \Gamma(x + y)$, we can write the log likelihood as 
+	\be
+		L(\alpha, \beta) = \log(n) +  \log B(n, \alpha+\beta) - \Big[\log(k) + \log B(k, \alpha)\Big]_\text{if $k\neq 0$} - \Big[\log(n-k) + \log B(n-k, \beta)\Big]_\text{if $k\neq n$}
+	\ee
+	which is numerically more robust to evaluate (because $\log B$ is often implemented directly in numerical packages, e.g. by \texttt{scipy.special.betaln} in python), and statistically more robust to optimize.
 \end{itemize}
 
+\newpage
 \no {\bf Gamma-Poisson model} (aka. Negative Binomial model)
+
+If we observe multiple sequences of events, each of which is generated by a Poisson process, but we think that the Poisson parameters are not identical, then the Gamma-Poisson model can provide robust estimates of the distribution of Poisson parameters. This is the simplest model for an inhomogeneous population of counts.
 \begin{itemize}
-	\item Data: $D = \{k_i\}_{i=1}^N$, where $k_i$(events) $\in \mathds{N}$.
+	\item We observe a sequence of counts (e.g. number of events), one for each experiment. The data is $D = \{k_i\}_{i=1}^N$, where $k_i$ is the count observed in the $i$th experiment.
 	\item Model: 
 	\begin{itemize}
-		\item level 1: the parameters $\lambda = \{\lambda_i\}_{i=1}^N$, where $\lambda_i$ > 0, define $P(k_i\;|\;\lambda) = \text{Poisson}(k_i\;|\;\lambda_i)$
-		\item level 2: the parameters $\alpha, \beta$ (both $>0$), define $P(\lambda_i\;|\; \alpha, \beta) = \text{Gamma}(\lambda_i\;|\;\alpha, \beta)$.
+		\item On level 1, we model the counts from each experiment with a Poisson distribution $P(k_i\;|\;\lambda) = \text{Poisson}(k_i\;|\;\lambda_i)$. The Poisson  parameters $\lambda = \{\lambda_i\}_{i=1}^N$, $\lambda_i$ > 0, represent the typical number of events in each experiment.
+		\item On level 2, we assume that the Poisson parameters come from a Gamma distribution with parameter $\alpha, \beta$ (both $>0$), i.e.  $P(\lambda_i\;|\; \alpha, \beta) = \text{Gamma}(\lambda_i\;|\;\alpha, \beta)$.
 	\end{itemize}
 	This hierarchy can be represented as 
 	\begin{figure}[h!]
 		\centering
 			\includegraphics[height=26mm]{./figs/04-GammaPoisson.pdf}
 		\end{figure}
-	\item Joint likelihood:
+	\item If we treat $\lambda$ parameters as hidden data, we can express the likelihood as
 	\be
 		P(D, \lambda\;|\;\alpha, \beta) = \prod_{i=1}^N\Big[\text{Poisson}(k_i\;|\;\lambda_i) \;\text{Gamma}(\lambda_i\;|\;\alpha, \beta)\Big]
 	\ee
 
-	\item Marginal likelihood:
+	\item For this model, we can integrate over $\lambda$ analytically, which produces the marginal likelihood
 	\ba
 		P(D\;|\;\alpha, \beta) &=& \prod_{i=1}^N\left[\int\!d\lambda_i\,\text{Poisson}(k_i\;|\;\lambda_i) \;\text{Gamma}(\lambda_i\;|\;\alpha, \beta)\right] = \prod_{i=1}^N\Big[\text{Gamma-Poisson}(k_i\;|\;\alpha, \beta)\Big]
 		\\
@@ -184,76 +200,93 @@ When a series of variables are connected to the rest of the graph in identical f
 		&=&
 		\text{NegativeBinom}(k\;|\;r, p) = {k + r -1 \choose k} p^k (1-p)^r,\quad \text{with }r = \alpha, \; p = \frac{1}{\beta + 1}
 	\ea
+	The log likelihood can be written as
+	\be
+	L(\alpha, \beta) = \sum_{i=1}^N \left(\alpha \log (\beta) - (\alpha + k_i)\log(\beta + 1) - \Big[\log(k_i) + \log B(k_i, \alpha)\Big]_\text{if $k_i\neq 0$}\right)
+	\ee
+	which is numerically more robust to evaluate (because $\log B$ is often implemented directly in numerical packages, e.g. by \texttt{scipy.special.betaln} in python), and statistically more robust to optimize.
 \end{itemize}
 
+\newpage
 \no {\bf Dirichlet-Multinomial model}
+
+In a sequence of experimental runs, each of which contains experiments with more than two possible outcomes, we may believe that the chances of the possible outcomes is similar between runs, but not exactly the same. In such a setting, the Dirichlet-Multinomial model can robustly estimate the population of outcome probabilities.
 \begin{itemize}
-	\item Data: $D = \{k_i\in\mathds{N}^M\}_{i=1}^N = \{(k_{i,1}, k_{i,2}, \ldots k_{i,M})\}_{i=1}^N$, where $k_{i,j}$(number of outcome $j$) $\in \mathds{N}$
+	\item We perform $N$ experimental runs, in each of which the individual experiments have $M$ possible outcomes. (E.g. a classroom of $N$ children visits an ice cream shop that sells $M$ flavors of ice cream every week.) The $i$th run contains $n_{i}$ attempts, out of which the different outcomes are present $(k_{i,1}, k_{i,2}, \ldots k_{i,M})$ number of times. The data is $D = \{k_i\in\mathds{N}^M\}_{i=1}^N = \{(k_{i,1}, k_{i,2}, \ldots k_{i,M})\}_{i=1}^N$, where $k_{i,j}\in \mathds{N}$ is the number of times outcome $j$ was observed in run $i$, $0\leq k_{i,j} \leq n_i$, and $\sum_{j=1}^M k_{i,j} = n_i$.
 	\item Model:
 	\begin{itemize}
-		\item level 1: the parameters $p = \{p_i \in \mathds{R}^{M}\}_{i=1}^N = \{(p_{i,1}, p_{i,2},\ldots p_{i,M})\}_{i=1}^N$, where $p_{i,j}$(probability of outcome $j$ in sample $i$) $>0$, and $\sum_{j=1}^M p_{i,j} = 1,\;\forall i$, define $P(k_i\;|\;p_i) = \text{Multinomial}(k_i\;|\;k_{i,\text{tot}},p_i)$, where $k_{i,\text{tot}} = \sum_{j=1}^M k_{i,j}$
-		\item level 2: the parameters $\alpha = (\alpha_1, \alpha_2, \ldots \alpha_M)$, where each $\alpha_j > 0$, define $P(p_i\;|\; \alpha)= \text{Dirichlet}(p_i\;|\;\alpha)$
+		\item On level 1, we model each run $i$ with a probability vector $p_i = (p_{i,1}, p_{i,2},\ldots p_{i,M})$, which indicates the probability of each outcome in this run. The full set of such vectors is $p = \{p_i \in \mathds{R}^{M}\}_{i=1}^N = \{(p_{i,1}, p_{i,2},\ldots p_{i,M})\}_{i=1}^N$, where $p_{i,j}>0$, and $\sum_{j=1}^M p_{i,j} = 1,\;\forall i$. Assuming that the experiments are independent (given $p$) leads to $P(k_i\;|\;n_i, p_i) = \text{Multinomial}(k_i\;|\;n_{i},p_i)$.
+		\item On level 2 we assume that each probability vector $p_i$ comes from a common Dirichlet distribution with parameters $\alpha = (\alpha_1, \alpha_2, \ldots \alpha_M)$, where each $\alpha_j > 0$. This defines $P(p_i\;|\; \alpha)= \text{Dirichlet}(p_i\;|\;\alpha)$.
 	\end{itemize}
 	This hierarchy can be represented as 
 	\begin{figure}[h!]
 		\centering
 			\includegraphics[height=26mm]{./figs/04-DirichletMultinomial.pdf}
 		\end{figure}
-	\item Joint likelihood:
+	\item Treating the success probability vectors as hidden data, we can write the likelihood as
 	\be
-		P(D\;p|\;\alpha) = \prod_{i=1}^N\Big[ \text{Multinomial}(k_i\;|\;k_{i,\text{tot}}, p_i)\;\text{Dirichlet}(p_i\;|\alpha) \Big]
+		P(D,p\;|\;\alpha) = \prod_{i=1}^N\Big[ \text{Multinomial}(k_i\;|\;n_i, p_i)\;\text{Dirichlet}(p_i\;|\alpha) \Big]
 	\ee
-	\item Marginal likelihood:
+	\item For this model, we can marginalize out $p$, and obtain the likelihood for $\alpha$ as
 	\ba
-		P(D\;|\;\alpha) &=& \prod_{i=1}^N\left[\int\!dp_i\, \text{Multinomial}(k_i\;|\;k_{i,\text{tot}}, p_i)\;\text{Dirichlet}(p_i\;|\alpha) \right] = \prod_{i=1}^N\Big[\text{Dirichlet-Multinomial}(k_i\;|\;k_{i,\text{tot}}, \alpha)\Big]
+		P(D\;|\;\alpha) &=& \prod_{i=1}^N\left[\int\!dp_i\, \text{Multinomial}(k_i\;|\;n_i, p_i)\;\text{Dirichlet}(p_i\;|\alpha) \right] = \prod_{i=1}^N\Big[\text{Dirichlet-Multinomial}(k_i\;|\;n_i, \alpha)\Big]
 		\\
-		\text{where} && \text{Dirichlet-Multinomial}(k\;|\;k_\text{tot}, \{\alpha_j\}_{j=1}^M) = \frac{\Gamma(k_\text{tot}+1)\Gamma(\alpha_\text{tot})}{\Gamma(k_\text{tot} + \alpha_\text{tot})} \prod_{j=1}^M \frac{\Gamma(k_j + \alpha_j)}{\Gamma(k_j + 1)\Gamma(\alpha_j)},
-		\\
-		&&\text{where }\quad \alpha_\text{tot} = \sum_{j=1}^M \alpha_j
+		\text{where} && \text{Dirichlet-Multinomial}(k\;|\;n, \{\alpha_j\}_{j=1}^M) = \frac{\Gamma(n+1)\Gamma(\alpha_\text{tot})}{\Gamma(n + \alpha_\text{tot})} \prod_{j=1}^M \frac{\Gamma(k_j + \alpha_j)}{\Gamma(k_j + 1)\Gamma(\alpha_j)},
 	\ea
+	where $\alpha_\text{tot} = \sum_{j=1}^M \alpha_j$. The log likelihood can be written as
+	\be
+		L(\alpha) = \log(n) + \log B(n, \alpha_\text{tot}) - \Big[\log(k_j) + \log B(k_j, \alpha_j)\Big]_\text{if $k_j\neq 0$}
+	\ee
+	which is numerically more robust to evaluate (because $\log B$ is often implemented directly in numerical packages, e.g. by \texttt{scipy.special.betaln} in python), and statistically more robust to optimize.
 \end{itemize}
 
 \newpage
 \no {\bf Random Effect Model}
+
+We often group observations by a feature that we suspect to be relevant for determining the measured quantity (e.g. grouping height measurements by gender). Random Effect Model can be used to robustly quantify how much of the populations variance is explained by the feature we used for grouping, i.e. how much smaller is the within-group variance compared to the total variance.
 \begin{itemize}
-	\item Data: $D = \{x_g\}_{g=1}^G = \{(x_{g,1}, x_{g,2},\ldots x_{g, N_g})\}_{g=1}^G$, where $x_{g,i} \in \mathds{R}$ is measurement $i$ in group $g$, and groups can be of different sizes $N_g$.
-	\item Model:
+	\item We observe data, which we group into $G$ non-overlapping groups: $D = \{x_g\}_{g=1}^G = \{(x_{g,1}, x_{g,2},\ldots x_{g, N_g})\}_{g=1}^G$, where $x_{g,i} \in \mathds{R}$ is measurement $i$ in group $g$, and groups can be of different sizes $N_g$.
+	\item We construct the following hierarchical model:
 	\begin{itemize}
-		\item level 1: The parameters $\mu = \{\mu_g\}_{g=1}^G$ and $\sigma^2$ define $P(x_{g,i}\;|\;\mu_g, \sigma) = \text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)$
-		\item level 2: The parameter $\sigma_0^2$ define $P(\mu_g\;|\;\mu_0,\sigma_0) = \text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2)$
+		\item On level 1, we assume that each observation comes from its group's distribution $P(x_{g,i}\;|\;\mu_g, \sigma) = \text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)$, where $\mu = \{\mu_g\}_{g=1}^G \in \mathds{R}^G$ are the centers for each group and $\sigma^2 > 0$ is the {\bf within-group variance}, shared by the groups.
+		\item On level 2, we assume that each group center $\mu_g$ comes from a global distribution, $P(\mu_g\;|\;\mu_0,\sigma_0) = \text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2)$, where $\mu_0 \in \mathds{R}$ is the global center, and $\sigma_0^2 > 0$ is the {\bf between-groups variance}. (The total variance is $\sigma^2 + \sigma_0^2$.)
 	\end{itemize}
-	This hierarchy can be represented as  
+	This hierarchy can be represented by the following graph
 	\begin{figure}[h]
 		\centering
 			\includegraphics[height=26mm]{./figs/04-anova.pdf}
 	\end{figure}
-	\item Joint likelihood:
+	\item We regard the group centers as hidden data, and write the likelihood (of $\mu_0, \sigma_0, \sigma$) as
 	\be
 		P(D, \mu\;|\; \mu_0, \sigma_0, \sigma) = \prod_{g=1}^G\left[\text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2) \times \prod_{i=1}^{N_g}\text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)\right]
 	\ee
-	\item Marginal likelihood:
+	\item Integrating over the group centers yields the marginal likelihood
 	\ba
 		P(D\;|\;\mu_0, \sigma_0, \sigma) 
 		&=& 
 		\prod_{g=1}^G\intop_{-\infty}^{+\infty}\!d\mu_g\,\left[\text{Normal}(\mu_g\;|\;\mu_0, \sigma_0^2) \times \prod_{i=1}^{N_g}\text{Normal}(x_{g,i}\;|\;\mu_g, \sigma^2)\right] 
 		\\
 		&=&
-		(2\pi \sigma_0^2)^{-\frac{G}{2}} \prod_{g=1}^G \left[\frac{1}{\sqrt{\xi + N_g}}(2\pi\sigma^2)^{-\frac{N_g-1}{2}}\exp\left(-\frac{N_g}{2\sigma^2}\left[\frac{\xi}{\xi + N_g}(\mu_g - m_g)^2 + s_g^2\right]\right)\right]
-		\\
-		\text{where}&& \xi = \frac{\sigma^2}{\sigma_0^2},\qquad m_g = \frac{1}{N_g}\sum_{i=1}^{N_g} x_{g,i}, \qquad s_g^2 = \frac{1}{N_g}\sum_{i=1}^{N_g} x_{g,i}^2 - m_g^2
+		\prod_{g=1}^G\left[ (2\pi \sigma^2)^{-\frac{N_g}{2}} \sqrt{\frac{\sigma^2}{\sigma^2 + N_g\sigma_0^2}} 
+		\;\exp\left(-\frac{N_g}{2}\frac{(\mu_0 - m_g)^2}{\sigma^2 + N_g\sigma_0^2} - \frac{N_g s_g^2}{2\sigma^2}\right)\right],
 	\ea
-
+	where $m_g = \frac{1}{N_g}\sum_{i=1}^{N_g} x_{g,i}$ and $s_g^2 = \frac{1}{N_g}\sum_{i=1}^{N_g} x_{g,i}^2 - m_g^2$ are the observed average and variance of the observations in group $g$.
+	The log likelihood is
+	\be
+		L(\mu_0,\sigma^2_0, \sigma^2) = \sum_{g=1}^G\left[ -\frac{N_g}{2}\log(2\pi \sigma^2) - \frac{1}{2} \log\left(\frac{\sigma^2}{\sigma^2 + N_g\sigma_0^2}\right)\;-\frac{N_g}{2}\frac{(\mu_0 - m_g)^2}{\sigma^2 + N_g\sigma_0^2} - \frac{N_g s_g^2}{2\sigma^2}\right].
+	\ee
+	Maximizing this function with respect to $(\mu_0, \sigma_0, \sigma)$ is a more efficient than maximizing $P(D,\mu\;|\;\mu_0, \sigma_0, \sigma)$ with respect to $(\mu, \mu_0, \sigma_0, \sigma)$ and yields more robust estimates.
 \end{itemize}
 
 \newpage
 \subsection{Example: Beta-Binomial}
-Life-time performance 10 different boxers are collected. Wins ($k_i$) and losses ($n_i - k_i$) are tallied, and the observed win rate $p_{i,\text{obs}} = k_i / n_i$ is calculated. This is shown below
+The life-time performance of 10 different boxers are collected. Wins ($k_i$) and losses ($n_i - k_i$) are tallied, and the observed win rate $p_{i,\text{obs}} = k_i / n_i$ is calculated. This is shown below
 \begin{figure}[h]
 \centering
 	\includegraphics[width=0.7\textwidth]{./figs/04-betabinom-data.pdf}
 \end{figure}
 
-We would like to determine the win rate of an ``typical boxer'', i.e. the distribution of the win rate $p$. While the observed values $p_\text{obs}$ are good estimates of the individual win rates, 5 boxers played less than 30 matches, while 5 played more than 40, which means the second group provides more information, and their observed win rates need to be taken with more certainty. The Beta-Binomial hierarchical model accounts for this inhomogeneity.
+We would like to determine the win rate of a ``typical boxer'', i.e. the distribution of the win rate $p$. While the observed values $p_\text{obs}$ are good estimates of the individual win rates, 5 boxers played up to 30 matches, while 5 played more than 40, which means the second group provides more information, and their observed win rates need to be taken with more certainty. The Beta-Binomial model can accounts for this inhomogeneity.
 \begin{itemize}
 	\item Data: $\{n_i\} = [24, 23, 30, 21, 25, 53, 41, 52, 64, 57]$, $\{k_i\} = [ 10, 13,  9, 10,  9, 51, 28, 37, 59, 45]$, with $N = 10$.
 	\item Parameters: $\alpha, \beta > 0$
