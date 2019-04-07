@@ -1,5 +1,6 @@
 \newpage
 \section{Graphical models}
+
 As the number of variables we wish to model increases the number of different models increases faster than exponentially. A common technique to get a handle on the dependencies of many real-world variables is to organize them into connected structures the components of which are simple and easily interpretable. This allows us to construct hierarchies, a powerful method for synthesizing knowledge.
 
 Representing variables with the nodes and dependencies with the edges of a graph is a powerful method to gain a bird's eye view of the model and reason about statistical dependencies between the variables under different fixed conditions. This section introduces elements of a graphical representation technique using directed, acyclic graphs. (Other methods are undirected graphs and factor graphs.)
@@ -129,6 +130,7 @@ When a sequence of variables are connected to the rest of the graph in identical
 
 \newpage
 \subsection{Hierarchical models}
+\label{sec:Hiararchical models}
 Using the graphical representation, we can define and understand models of multiple levels of hierarchy with ease. 
 
 The usual difficulty that comes with multi-level models is the rapid increase of the number of parameters. If not kept in check, this leads to overfitting (in MLE context) or inefficient sampling (in MCMC context). Once in a while, variables on intermediate levels of a hierarchical model can be marginalized out, giving rise to a log likelihood function with fewer parameters that enable a more efficient and more robust solutions.
